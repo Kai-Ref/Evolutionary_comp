@@ -1,9 +1,8 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 
-
 class TSP:
-    def __init__(self, filepath, distance_metric='euclidean', precompute_distances=True):
+    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True):
         self.filepath = filepath
         self.metadata = {}
         self.node_coords = None  # Will be a NumPy array
@@ -11,7 +10,7 @@ class TSP:
         self.precompute_distances = precompute_distances
         self.distance_matrix = None
 
-    def read(self):
+    def read(self) -> None:
         coords_list = []
         with open(self.filepath, 'r') as file:
             lines = file.readlines()
@@ -44,36 +43,31 @@ class TSP:
         if self.precompute_distances:
             self.distance_matrix = cdist(self.node_coords, self.node_coords, metric=self.distance_metric)
 
-    def get_metadata(self):
+    def get_metadata(self) -> dict:
         return self.metadata
 
-    def get_node_coords(self):
+    def get_node_coords(self) -> np.ndarray:
         return self.node_coords
 
-    def get_distance_matrix(self):
+    def get_distance_matrix(self) -> np.ndarray:
         if self.distance_matrix is None:
             self.distance_matrix = cdist(self.node_coords, self.node_coords, metric=self.distance_metric)
         return self.distance_matrix
 
-    def distance(self, i, j):
+    def distance(self, i: int, j: int) -> float:
         """Compute distance between node i and j (0-based index)."""
         if self.distance_matrix is not None:
             return self.distance_matrix[i, j]
         else:
             return cdist([self.node_coords[i]], [self.node_coords[j]], metric=self.distance_metric)[0, 0]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         n = len(self.node_coords) if self.node_coords is not None else 0
         return f"<TSP {self.filepath}, {n} nodes, metric={self.distance_metric}>"
-
-
-
-
-
+    
 if __name__ == "__main__":
-    tsp = TSP('C:/Users/555ka/Coding/Evolutionary_comp/datasets/eil51.tsp', distance_metric='euclidean', precompute_distances=True)
+    tsp = TSP('datasets/eil51.tsp', distance_metric='euclidean', precompute_distances=True)
     tsp.read()
-
     print(tsp.get_metadata())
     print(tsp.get_node_coords().shape)
     print("Distance between node 0 and 1:", tsp.distance(0, 1))
