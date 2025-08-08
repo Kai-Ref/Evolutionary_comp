@@ -1,14 +1,25 @@
 import numpy as np
 from scipy.spatial.distance import cdist
+from src.Individual import Individual
+from src.Population import Population
 
 class TSP:
-    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True):
+    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, population_size: int = 1):
         self.filepath = filepath
         self.metadata = {}
         self.node_coords = None  # Will be a NumPy array
         self.distance_metric = distance_metric
         self.precompute_distances = precompute_distances
         self.distance_matrix = None
+        self.read()
+        self.population = Population(population_size, self.node_coords.shape[0])
+
+    def solve(self):
+        raise NotImplementedError("Solve method must be implemented in subclasses.")
+    
+    def calculate_fitness(self):
+        #Naive fitness calculation, going through the whole path and summing the distances
+        raise NotImplementedError("Not implemented yet.")
 
     def read(self) -> None:
         coords_list = []
@@ -65,9 +76,3 @@ class TSP:
         n = len(self.node_coords) if self.node_coords is not None else 0
         return f"<TSP {self.filepath}, {n} nodes, metric={self.distance_metric}>"
     
-if __name__ == "__main__":
-    tsp = TSP('datasets/eil51.tsp', distance_metric='euclidean', precompute_distances=True)
-    tsp.read()
-    print(tsp.get_metadata())
-    print(tsp.get_node_coords().shape)
-    print("Distance between node 0 and 1:", tsp.distance(0, 1))
