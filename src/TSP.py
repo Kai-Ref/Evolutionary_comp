@@ -13,7 +13,7 @@ class TSP:
         self.precompute_distances = precompute_distances
         self.distance_matrix = None
         self.read()
-        self.population = Population(population_size, self.node_coords.shape[0])
+        self.population = Population(population_size, self.node_coords.shape[0],self)
         self.mutation = mutation
         self.file_writer = FileWriter()
 

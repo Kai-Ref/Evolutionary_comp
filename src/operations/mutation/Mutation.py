@@ -2,7 +2,6 @@ from src.Population import Population
 from src.Individual import Individual
 class Mutation:
     def __call__(self, individual: Individual, i: int, j: int) -> Individual:
-
         self.mutation_probability = None #TODO: often either 1/population size or 1/length of permutation array
         # for idx in range(len(population)):
         #     individual = population[idx]
@@ -16,4 +15,6 @@ class Mutation:
         raise NotImplementedError("Mutate method must be implemented in subclasses.")
 
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
-        raise NotImplementedError("Efficient fitness calculation must be implemented in subclasses.")
+        if individual.fitness is None:
+            individual.calculate_fitness()
+            

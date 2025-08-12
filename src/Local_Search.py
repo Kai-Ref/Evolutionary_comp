@@ -28,6 +28,8 @@ class LocalSearch(TSP):
         
     def perform_one_step(self, current: Individual) -> Individual | None:
         for neighbour in self.get_next_neighbour(current):
+            if neighbour.fitness is None:
+                neighbour.calculate_fitness()
             if neighbour.fitness > current.fitness:
                 return neighbour
         return None
