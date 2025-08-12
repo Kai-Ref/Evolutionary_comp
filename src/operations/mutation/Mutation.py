@@ -7,7 +7,7 @@ class Mutation:
         # for idx in range(len(population)):
         #     individual = population[idx]
         print(f"Mutating individual {individual} at indices {i} and {j}.")
-        self.mutate(individual, i, j)
+        self.mutate_individual(individual, i, j)
         print(f"Individual after mutation: {individual}")
         # self.efficient_fitness_calculation(individual, i, j)
         return individual

@@ -3,7 +3,7 @@ from src.Individual import Individual
 from typing import override
 class Exchange(Mutation):
     @override
-    def mutate(self, individual: Individual, i: int, j: int) -> None:
+    def mutate_individual(self, individual: Individual, i: int, j: int) -> None:
         n = len(individual.permutation)
         assert 0 <= i < n, "Index i is out of bounds."
         assert 0 <= j < n, "Index j is out of bounds."
