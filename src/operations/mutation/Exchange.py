@@ -12,8 +12,21 @@ class Exchange(Mutation):
         # Swap cities at positions i and j
         new_tour = individual.permutation.tolist()  # Copy the original tour
         new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
+
+        # Update individual's permutation with the mutated tour
         individual.permutation = new_tour
-        
+
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
+        current_fitness = individual.fitness
+
+        # get the fitness of the changed values
+
+        # get the old fitness of the changed values
+
+        # delta = old_fitness[changed indices] - new_fitness[changed indices]
+
+        # calculate new_fitness = old_fitness - delta
+
+
         raise NotImplementedError("Efficient fitness calculation for exchange mutation is not implemented yet.")

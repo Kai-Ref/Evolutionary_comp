@@ -10,4 +10,10 @@ class Population:
         total_fitness = sum(ind.fitness for ind in self.individuals if ind.fitness is not None)
         return total_fitness / self.population_size if self.population_size > 0 else None
     
+    def __len__(self) -> int:
+        return self.population_size
+    
+    def __getitem__(self, index):
+        return self.individuals[index]
+    
     # other useful metrics for evalution can be added here

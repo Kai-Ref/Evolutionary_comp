@@ -16,8 +16,10 @@ class TwoOpt(Mutation):
         # Reverse the segment between i and j (inclusive)
         new_tour = individual.permutation.tolist()
         new_tour[i:j+1] = reversed(new_tour[i:j+1])
+
+        # Update individual's permutation with the mutated tour
         individual.permutation = new_tour
-        
+
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
         raise NotImplementedError("Efficient fitness calculation for Two Opt mutation is not implemented yet.")
