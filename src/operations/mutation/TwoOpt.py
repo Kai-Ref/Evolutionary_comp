@@ -4,7 +4,20 @@ from typing import override
 class TwoOpt(Mutation):
     @override
     def mutate(self, individual: Individual, i: int, j: int) -> None:
-        raise NotImplementedError("Two Opt mutation is not implemented yet.")
+        n = len(individual.permutation)
+        assert 0 <= i < n, "Index i is out of bounds."
+        assert 0 <= j < n, "Index j is out of bounds."
+        assert i != j, "Indices i and j must be different."
+        
+        # Handle i > j for proper segment reversal
+        if i > j:
+            i, j = j, i
+        
+        # Reverse the segment between i and j (inclusive)
+        new_tour = individual.permutation.tolist()
+        new_tour[i:j+1] = reversed(new_tour[i:j+1])
+        individual.permutation = new_tour
+        
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
         raise NotImplementedError("Efficient fitness calculation for Two Opt mutation is not implemented yet.")

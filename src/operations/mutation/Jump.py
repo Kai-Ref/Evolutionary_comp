@@ -17,7 +17,7 @@ class Jump(Mutation):
         new_tour.insert(j, city)
 
         # Update individual's permutation with the mutated tour
-        individual.permutation = np.array(new_tour)
+        individual.permutation = new_tour
     
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
