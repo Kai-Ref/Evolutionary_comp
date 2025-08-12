@@ -9,6 +9,7 @@ class EvolutionaryAlgorithm(TSP):
         self.crossover = crossover
         self.selection = selection
     
+    
     def solve(self):
         # Implement the evolutionary algorithm here
         raise NotImplementedError("Evolutionary algorithm is not implemented yet.")
