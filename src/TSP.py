@@ -15,7 +15,7 @@ class TSP:
         self.population = Population(population_size, self.node_coords.shape[0])
         self.mutation = mutation
 
-    def solve(self):
+    def solve(self, max_iterations: int =1E4):
         raise NotImplementedError("Solve method must be implemented in subclasses.")
     
     def calculate_fitness(self):
