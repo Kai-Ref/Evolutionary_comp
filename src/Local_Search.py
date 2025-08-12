@@ -27,11 +27,16 @@ class LocalSearch(TSP):
                 break
         
     def perform_one_step(self, current: Individual) -> Individual | None:
+        print(f'Current individual: {current}')
+        old_individual = current.copy()
         for neighbour in self.get_next_neighbour(current):
-            if neighbour.fitness is None:
-                neighbour.calculate_fitness()
-            if neighbour.fitness > current.fitness:
+            print(f'Checking neighbour: {neighbour}')
+            neighbour.calculate_fitness()
+            if neighbour.fitness < old_individual.fitness:
                 return neighbour
+            else:
+                return old_individual
+        print(f'No better neighbour found for individual: {current}')
         return None
 
     def get_next_neighbour(self, current: Individual) -> Generator[Individual, None, None]:
@@ -43,4 +48,4 @@ class LocalSearch(TSP):
         rng = np.random.default_rng()
         rng.shuffle(indices)
         for i, j in indices:
-            yield self.mutation.mutate(current, i, j)
+            yield self.mutation.mutate_individual(current, i, j)

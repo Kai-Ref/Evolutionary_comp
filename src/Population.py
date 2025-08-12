@@ -13,10 +13,14 @@ class Population:
     def get_max_fitness(self) -> float:
         max_fitness = max(ind.fitness for ind in self.individuals if ind.fitness is not None)
         return max_fitness if max_fitness is not None else None
+    
     def __len__(self) -> int:
         return self.population_size
     
     def __getitem__(self, index):
         return self.individuals[index]
+
+    def __setitem__(self, index, value):
+        self.individuals[index] = value  # or however you store your individuals
     
     # other useful metrics for evalution can be added here
