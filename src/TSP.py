@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from src.Individual import Individual
 from src.Population import Population
+from src.FileWriter import FileWriter
 
 class TSP:
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, population_size: int = 1, mutation=None):
@@ -12,13 +13,14 @@ class TSP:
         self.precompute_distances = precompute_distances
         self.distance_matrix = None
         self.read()
-        self.population = Population(population_size, self.node_coords.shape[0])
+        self.population = Population(population_size, self.node_coords.shape[0],self)
         self.mutation = mutation
+        self.file_writer = FileWriter()
 
-    def solve(self, max_iterations: int =1E4):
+    def solve(self, max_iterations: int =1E4) -> None:
         raise NotImplementedError("Solve method must be implemented in subclasses.")
     
-    def calculate_fitness(self):
+    def calculate_fitness(self) -> None:
         #Naive fitness calculation, going through the whole path and summing the distances
         raise NotImplementedError("Not implemented yet.")
 
@@ -63,7 +65,7 @@ class TSP:
 
     def get_distance_matrix(self) -> np.ndarray:
         if self.distance_matrix is None:
-            self.distance_matrix = cdist(self.node_coords, self.node_coords, metric=self.distance_metric)
+            self.distance_matrix = np.round(cdist(self.node_coords, self.node_coords, metric=self.distance_metric))
         return self.distance_matrix
 
     def distance(self, i: int, j: int) -> float:
@@ -71,7 +73,7 @@ class TSP:
         if self.distance_matrix is not None:
             return self.distance_matrix[i, j]
         else:
-            return cdist([self.node_coords[i]], [self.node_coords[j]], metric=self.distance_metric)[0, 0]
+            return np.round(cdist([self.node_coords[i]], [self.node_coords[j]], metric=self.distance_metric)[0, 0])
 
     def __repr__(self) -> str:
         n = len(self.node_coords) if self.node_coords is not None else 0

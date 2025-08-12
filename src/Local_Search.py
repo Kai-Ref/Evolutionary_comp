@@ -2,58 +2,50 @@ import numpy as np
 from typing import override
 from src.TSP import TSP
 from src.Population import Population
+from src.Individual import Individual
+from typing import Generator
 class LocalSearch(TSP):
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1):
         super().__init__(filepath=filepath, distance_metric=distance_metric, precompute_distances=precompute_distances, population_size=population_size, mutation=mutation)
-        
+        self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
+
     @override
-    def solve(self, max_iterations: int = 1E4):
-        pass
+    def solve(self, max_iterations: int = 1E4) -> None:
+        individuals_reached_optimum = 0
+        for iteration in range(max_iterations):
+            for individual_index in range(len(self.population)):    
+                new_individual = self.perform_one_step(self.population[individual_index].copy()) if self.population[individual_index].fitness is not None else None
+                if new_individual is None:
+                    self.population[individual_index].is_local_optimum = True
+                    individuals_reached_optimum += 1
+                    print(f"Individual {individual_index} reached local optimum, at iteration {iteration}.\n It is the {individuals_reached_optimum}th individual(out of {len(self.population)}) to reach local optimum.")
+                    break
+                self.population[individual_index] = new_individual
+            self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
+            if individuals_reached_optimum == len(self.population):
+                print(f"All individuals reached local optimum at iteration {iteration}.")
+                break
         
-    
-    def get_next_neighbour(self, current: Population) -> Population:
-        """
-        Generator Function which returns the next neighbour. It returns None if all possible neighbours where already returned
-        """
-        neighbour = None
+    def perform_one_step(self, current: Individual) -> Individual | None:
+        print(f'Current individual: {current}')
+        old_individual = current.copy()
+        for neighbour in self.get_next_neighbour(current):
+            print(f'Checking neighbour: {neighbour}')
+            neighbour.calculate_fitness()
+            if neighbour.fitness < old_individual.fitness:
+                return neighbour
+            else:
+                return old_individual
+        print(f'No better neighbour found for individual: {current}')
+        return None
 
-    def jump_neighbors(tour: list) -> list:
+    def get_next_neighbour(self, current: Individual) -> Generator[Individual, None, None]:
         """
-        Perform the Jump operation between two cities in the tour.
+        Generator Function which returns the next neighbour. Systematically goes through all possible mutations. An unique mutation is characterized by (i, j) indices.
+        It returns None if all possible neighbours where already returned
         """
-        n = len(tour)
-        for i in range(n):
-            for j in range(n):
-                if i == j:
-                    continue
-                # Create a new tour by removing city at i and inserting it at j
-                new_tour = tour[:]
-                city = new_tour.pop(i)
-                new_tour.insert(j, city)
-                yield new_tour
-
-    
-    def exchange_neighbors(tour: list) -> list:
-        """
-        Generate neighbors by swapping two cities in the tour.
-        """
-        n = len(tour)
-        for i in range(n):
-            for j in range(i + 1, n):
-                new_tour = tour[:]
-                # Swap cities at positions i and j
-                new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
-                yield new_tour
-
-
-    def Two_Opt(tour: list) -> list:
-        """
-        Generate neighbors by reversing the segment between two indices (2-opt move).
-        """
-        n = len(tour)
-        for i in range(n - 1):
-            for j in range(i + 1, n):
-                new_tour = tour[:i] + tour[i:j + 1][::-1] + tour[j + 1:]
-                yield new_tour
-
-    
+        indices = [(i, j) for i in range(self.node_coords.shape[0]) for j in range(self.node_coords.shape[0]) if i != j]
+        rng = np.random.default_rng()
+        rng.shuffle(indices)
+        for i, j in indices:
+            yield self.mutation.mutate_individual(current, i, j)
