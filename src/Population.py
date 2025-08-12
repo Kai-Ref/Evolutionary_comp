@@ -10,4 +10,7 @@ class Population:
         total_fitness = sum(ind.fitness for ind in self.individuals if ind.fitness is not None)
         return total_fitness / self.population_size if self.population_size > 0 else None
     
+    def get_max_fitness(self) -> float:
+        max_fitness = max(ind.fitness for ind in self.individuals if ind.fitness is not None)
+        return max_fitness if max_fitness is not None else None
     # other useful metrics for evalution can be added here

@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from src.Individual import Individual
 from src.Population import Population
+from src.FileWriter import FileWriter
 
 class TSP:
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, population_size: int = 1, mutation=None):
@@ -14,6 +15,7 @@ class TSP:
         self.read()
         self.population = Population(population_size, self.node_coords.shape[0])
         self.mutation = mutation
+        self.file_writer = FileWriter()
 
     def solve(self, max_iterations: int =1E4) -> None:
         raise NotImplementedError("Solve method must be implemented in subclasses.")

@@ -7,7 +7,7 @@ class Mutation:
             self.efficient_fitness_calculation(individual)
         return population
     
-    def mutate(self, individual: Individual, i: int, j: int) -> None:
+    def mutate_individual(self, individual: Individual, i: int, j: int) -> None:
         raise NotImplementedError("Mutate method must be implemented in subclasses.")
 
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
