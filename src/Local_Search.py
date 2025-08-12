@@ -7,7 +7,7 @@ from typing import Generator
 class LocalSearch(TSP):
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1):
         super().__init__(filepath=filepath, distance_metric=distance_metric, precompute_distances=precompute_distances, population_size=population_size, mutation=mutation)
-        self.previous_fitness = np.array([individuals.fitness for individuals in self.population]).expand_dims(axis=0)
+        self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
 
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
@@ -21,7 +21,7 @@ class LocalSearch(TSP):
                     print(f"Individual {individual_index} reached local optimum, at iteration {iteration}.\n It is the {individuals_reached_optimum}th individual(out of {len(self.population)}) to reach local optimum.")
                     break
                 self.population[individual_index] = new_individual
-            self.previous_fitness = np.array([individuals.fitness for individuals in self.population]).expand_dims(axis=0)
+            self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
             if individuals_reached_optimum == len(self.population):
                 print(f"All individuals reached local optimum at iteration {iteration}.")
                 break
