@@ -4,7 +4,7 @@ from src.Individual import Individual
 from src.Population import Population
 
 class TSP:
-    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, population_size: int = 1):
+    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, population_size: int = 1, mutation=None):
         self.filepath = filepath
         self.metadata = {}
         self.node_coords = None  # Will be a NumPy array
@@ -13,6 +13,7 @@ class TSP:
         self.distance_matrix = None
         self.read()
         self.population = Population(population_size, self.node_coords.shape[0])
+        self.mutation = mutation
 
     def solve(self):
         raise NotImplementedError("Solve method must be implemented in subclasses.")
