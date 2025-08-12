@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Individual:
     permutation: np.ndarray
@@ -8,3 +9,12 @@ class Individual:
         self.permutation = np.random.permutation(number_of_nodes)
         self.fitness = None
         self.is_local_optimum = False
+
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def __str__(self):
+        return f"Individual(permutation={self.permutation}, fitness={self.fitness})"
+
+    def __repr__(self):
+        return self.__str__()
