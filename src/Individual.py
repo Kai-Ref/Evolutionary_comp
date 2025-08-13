@@ -14,9 +14,9 @@ class Individual:
             self.permutation = permutation.copy()
         elif number_of_nodes is not None:
             self.permutation = np.random.permutation(number_of_nodes).tolist()
+            self.calculate_fitness()
         else:
             raise ValueError("Either number_of_nodes or permutation must be provided.")
-        self.calculate_fitness()
 
     def copy(self):
         return copy.deepcopy(self)
