@@ -3,7 +3,7 @@ from src.Individual import Individual
 from typing import override
 class TwoOpt(Mutation):
     @override
-    def mutate_individual(self, individual: Individual, i: int, j: int) -> None:
+    def mutate_individual(self, individual: Individual, i: int, j: int, update_fitness: bool = False) -> None:
         n = len(individual.permutation)
         assert 0 <= i < n, "Index i is out of bounds."
         assert 0 <= j < n, "Index j is out of bounds."
@@ -19,7 +19,7 @@ class TwoOpt(Mutation):
 
         # Create a new individual and compute its fitness efficiently
         new_individual = Individual(permutation=new_tour, tsp=individual.tsp)
-        new_individual.fitness = self.efficient_fitness_calculation(individual, new_individual, i, j)
+        new_individual.fitness = self.efficient_fitness_calculation(individual, new_individual, i, j) if update_fitness else None
         return new_individual
     
     @override

@@ -3,7 +3,7 @@ from src.Individual import Individual
 from typing import override
 class Exchange(Mutation):
     @override
-    def mutate_individual(self, individual: Individual, i: int, j: int) -> None:
+    def mutate_individual(self, individual: Individual, i: int, j: int, update_fitness:bool = False) -> None:
         n = len(individual.permutation)
         assert 0 <= i < n, "Index i is out of bounds."
         assert 0 <= j < n, "Index j is out of bounds."
@@ -15,11 +15,13 @@ class Exchange(Mutation):
 
         # Create a new individual and compute its fitness efficiently
         new_individual = Individual(permutation=new_tour, tsp=individual.tsp)
-        new_individual.fitness = self.efficient_fitness_calculation(individual, new_individual, i, j)
+        # if update_fitness as this might not be required for EA
+        new_individual.fitness = self.efficient_fitness_calculation(individual, new_individual, i, j) if update_fitness else None
         return new_individual
     
     @override
     def efficient_fitness_calculation(self, old_individual: Individual, new_individual: Individual, i: int, j: int) -> float:
+        # Can be made more memory-efficient, probably not needed though.
         n = len(old_individual.permutation)
         old_permutation = old_individual.permutation.copy()
         new_permutation = new_individual.permutation.copy()
