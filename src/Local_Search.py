@@ -4,6 +4,7 @@ from src.TSP import TSP
 from src.Population import Population
 from src.Individual import Individual
 from typing import Generator
+from tqdm import tqdm
 class LocalSearch(TSP):
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1, number_neighbors:int = 1):
         super().__init__(filepath=filepath, distance_metric=distance_metric, precompute_distances=precompute_distances, population_size=population_size, mutation=mutation)
@@ -13,8 +14,9 @@ class LocalSearch(TSP):
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
         individuals_reached_optimum = 0
-        for individual_index in range(len(self.population)):    
-            for iteration in range(max_iterations):
+        for individual_index in range(len(self.population)):
+            pbar = tqdm(range(max_iterations), desc=f"Ind {individual_index} Fitness: {self.population[individual_index].fitness:.2f}")    
+            for iteration in pbar:
                 new_individual = self.perform_one_step(self.population[individual_index].copy()) if self.population[individual_index].fitness is not None else None
                 if new_individual is None:
                     self.population[individual_index].is_local_optimum = True
@@ -22,6 +24,7 @@ class LocalSearch(TSP):
                     print(f"Individual {individual_index} reached local optimum, at iteration {iteration}.\n It is the {individuals_reached_optimum}th individual(out of {len(self.population)}) to reach local optimum.")
                     break
                 self.population[individual_index] = new_individual
+                pbar.set_description(f"Ind {individual_index} Fitness: {new_individual.fitness:.2f}")
             self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
             if individuals_reached_optimum == len(self.population):
                 print(f"All individuals reached local optimum at iteration {iteration}.")
@@ -36,7 +39,7 @@ class LocalSearch(TSP):
 
         # Find the fittest neighbour and return it if it improves the fitness
         best_neighbour = min(neighbours, key=lambda individual: individual.fitness)
-        print(f"Current fitness {current.fitness}, best neighbour fitness {best_neighbour.fitness}")
+        # print(f"Current fitness {current.fitness}, best neighbour fitness {best_neighbour.fitness}")
         if best_neighbour.fitness < current.fitness:
             return best_neighbour
         else:
