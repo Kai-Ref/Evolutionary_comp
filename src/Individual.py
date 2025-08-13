@@ -8,7 +8,6 @@ class Individual:
     
     def __init__(self, number_of_nodes: int = None, tsp=None, permutation=None):
         self.tsp = tsp
-        self.is_local_optimum = False
 
         if permutation is not None:
             self.permutation = permutation.copy()

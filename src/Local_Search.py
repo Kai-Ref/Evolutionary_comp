@@ -13,25 +13,19 @@ class LocalSearch(TSP):
 
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
-        individuals_reached_optimum = 0
         for individual_index in range(len(self.population)):
             pbar = tqdm(range(max_iterations), desc=f"Ind {individual_index} Fitness: {self.population[individual_index].fitness:.2f}")    
             for iteration in pbar:
-                new_individual = self.perform_one_step(self.population[individual_index].copy()) if self.population[individual_index].fitness is not None else None
+                new_individual = self.perform_one_step(self.population[individual_index].copy())
                 if new_individual is None:
-                    self.population[individual_index].is_local_optimum = True
-                    individuals_reached_optimum += 1
-                    print(f"Individual {individual_index} reached local optimum, at iteration {iteration}.\n It is the {individuals_reached_optimum}th individual(out of {len(self.population)}) to reach local optimum.")
+                    print(f"Individual {individual_index} reached local optimum, at iteration {iteration}")
                     break
                 self.population[individual_index] = new_individual
                 pbar.set_description(f"Ind {individual_index} Fitness: {new_individual.fitness:.2f}")
             self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
-            if individuals_reached_optimum == len(self.population):
-                print(f"All individuals reached local optimum at iteration {iteration}.")
-                break
+
         
     def perform_one_step(self, current: Individual) -> Individual | None:
-        
         neighbours = []
         for idx, neighbour in zip(range(self.number_neighbors), self.get_next_neighbour(current)):
             # neighbour.calculate_fitness() # Since we return the indivduals now, instead of overwriting, we can omit this
@@ -43,7 +37,7 @@ class LocalSearch(TSP):
         if best_neighbour.fitness < current.fitness:
             return best_neighbour
         else:
-            return current
+            return None
 
     def get_next_neighbour(self, current: Individual) -> Generator[Individual, None, None]:
         """
