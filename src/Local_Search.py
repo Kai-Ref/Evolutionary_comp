@@ -5,15 +5,16 @@ from src.Population import Population
 from src.Individual import Individual
 from typing import Generator
 class LocalSearch(TSP):
-    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1):
+    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1, number_neighbors:int = 1):
         super().__init__(filepath=filepath, distance_metric=distance_metric, precompute_distances=precompute_distances, population_size=population_size, mutation=mutation)
         self.previous_fitness = np.expand_dims(np.array([individuals.fitness for individuals in self.population]), axis=0)
+        self.number_neighbors = number_neighbors
 
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
         individuals_reached_optimum = 0
-        for iteration in range(max_iterations):
-            for individual_index in range(len(self.population)):    
+        for individual_index in range(len(self.population)):    
+            for iteration in range(max_iterations):
                 new_individual = self.perform_one_step(self.population[individual_index].copy()) if self.population[individual_index].fitness is not None else None
                 if new_individual is None:
                     self.population[individual_index].is_local_optimum = True
@@ -27,17 +28,19 @@ class LocalSearch(TSP):
                 break
         
     def perform_one_step(self, current: Individual) -> Individual | None:
-        print(f'Current individual: {current}')
-        old_individual = current.copy()
-        for neighbour in self.get_next_neighbour(current):
-            print(f'Checking neighbour: {neighbour}')
-            neighbour.calculate_fitness()
-            if neighbour.fitness < old_individual.fitness:
-                return neighbour
-            else:
-                return old_individual
-        print(f'No better neighbour found for individual: {current}')
-        return None
+        
+        neighbours = []
+        for idx, neighbour in zip(range(self.number_neighbors), self.get_next_neighbour(current)):
+            # neighbour.calculate_fitness() # Since we return the indivduals now, instead of overwriting, we can omit this
+            neighbours.append(neighbour)
+
+        # Find the fittest neighbour and return it if it improves the fitness
+        best_neighbour = min(neighbours, key=lambda individual: individual.fitness)
+        print(f"Current fitness {current.fitness}, best neighbour fitness {best_neighbour.fitness}")
+        if best_neighbour.fitness < current.fitness:
+            return best_neighbour
+        else:
+            return current
 
     def get_next_neighbour(self, current: Individual) -> Generator[Individual, None, None]:
         """

@@ -12,13 +12,14 @@ class Jump(Mutation):
         assert i != j, "Indices i and j must be different."
 
         # Create a new tour by removing city at i and inserting it at j
-        new_tour = individual.permutation # Copy the original tour
+        new_tour = individual.permutation.copy() # Copy the original tour
         city = new_tour.pop(i)
         new_tour.insert(j, city)
 
+        # Removed, since it is cleaner to not overwrite the initial permutation
         # Update individual's permutation with the mutated tour
-        individual.permutation = new_tour
-        return individual
+        # individual.permutation = new_tour
+        return Individual(permutation=new_tour, tsp=individual.tsp)
     
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:

@@ -10,11 +10,12 @@ class Exchange(Mutation):
         assert i != j, "Indices i and j must be different."
         
         # Swap cities at positions i and j
-        new_tour = individual.permutation.tolist()  # Copy the original tour
+        new_tour = individual.permutation.copy()  # Copy the original tour
         new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
 
         # Update individual's permutation with the mutated tour
-        individual.permutation = new_tour
+        # individual.permutation = new_tour
+        return Individual(permutation=new_tour, tsp=individual.tsp)
 
     @override
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
