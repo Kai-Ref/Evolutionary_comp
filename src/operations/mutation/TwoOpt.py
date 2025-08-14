@@ -1,6 +1,8 @@
 from src.operations.mutation.Mutation import Mutation
 from src.Individual import Individual
 from typing import override
+import numpy as np
+
 class TwoOpt(Mutation):
     @override
     def mutate_individual(self, individual: Individual, i: int, j: int, update_fitness: bool = True) -> None:
@@ -57,6 +59,44 @@ class TwoOpt(Mutation):
 
         # 3. Compute the difference and add it to the previous fitness
         return new_distance - old_distance
+
+    def efficient_fitness_calculation_vectorized(self, individual: Individual, indices: np.ndarray) -> np.ndarray:
+        """Vectorized delta calculation for 2-Opt mutation."""
+        tour = np.array(individual.permutation, dtype=int)
+        dist = individual.tsp.get_distance_matrix()
+        n = len(tour)
+
+        indices = np.array(list(indices), dtype=int)
+        i_arr = indices[:, 0]
+        j_arr = indices[:, 1]
+
+        # Ensure i < j for segment reversal
+        swap_mask = i_arr > j_arr
+        i_arr[swap_mask], j_arr[swap_mask] = j_arr[swap_mask], i_arr[swap_mask]
+
+        node_before_i = tour[(i_arr - 1) % n]
+        node_i = tour[i_arr]
+        node_j = tour[j_arr]
+        node_after_j = tour[(j_arr + 1) % n]
+
+        deltas = np.empty(len(i_arr), dtype=float)
+
+        # Full-tour reversal (delta = 0)
+        full_rev_mask = (i_arr == 0) & (j_arr == n - 1)
+        deltas[full_rev_mask] = 0.0
+
+        # Non-full reversal
+        mask = ~full_rev_mask
+        old_d = dist[node_before_i, node_i] + dist[node_j, node_after_j]
+        new_d = dist[node_before_i, node_j] + dist[node_i, node_after_j]
+        deltas[mask] = new_d[mask] - old_d[mask]
+
+        return deltas
+
+    
+    @override
+    def __str__(self):
+        return "TwoOpt"
 
 
 

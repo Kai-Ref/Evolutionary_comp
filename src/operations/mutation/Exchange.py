@@ -1,6 +1,8 @@
 from src.operations.mutation.Mutation import Mutation
 from src.Individual import Individual
 from typing import override
+import numpy as np
+
 class Exchange(Mutation):
     @override
     def mutate_individual(self, individual: Individual, i: int, j: int, update_fitness:bool = True) -> None:
@@ -44,11 +46,19 @@ class Exchange(Mutation):
         j_next = tour[(j + 1) % n]
 
         # 2. Calculate the distances of modified edges
-        if j == (i + 1) % n:
-            old_distance = tsp.distance(i_previous, city_i) + tsp.distance(city_i, city_j) \
-                        + tsp.distance(city_j, j_next)
-            new_distance = tsp.distance(i_previous, city_j) + tsp.distance(city_j, city_i) \
-                        + tsp.distance(city_i, j_next)
+        # if (j == (i + 1) % n) or (i == 0 and j == n - 1):
+        #     old_distance = tsp.distance(i_previous, city_i) + tsp.distance(city_i, city_j) \
+        #                 + tsp.distance(city_j, j_next)
+        #     new_distance = tsp.distance(i_previous, city_j) + tsp.distance(city_j, city_i) \
+        #                 + tsp.distance(city_i, j_next)
+        if j == i + 1:
+            # normal adjacent
+            old_distance = tsp.distance(i_previous, city_i) + tsp.distance(city_i, city_j) + tsp.distance(city_j, j_next)
+            new_distance = tsp.distance(i_previous, city_j) + tsp.distance(city_j, city_i) + tsp.distance(city_i, j_next)
+        elif i == 0 and j == n - 1:
+            # first-last adjacent
+            old_distance = tsp.distance(j_previous, city_j) + tsp.distance(city_j, city_i) + tsp.distance(city_i, i_next)
+            new_distance = tsp.distance(j_previous, city_i) + tsp.distance(city_i, city_j) + tsp.distance(city_j, i_next)
         else:
             old_distance = tsp.distance(i_previous, city_i) + tsp.distance(city_i, i_next) \
                         + tsp.distance(j_previous, city_j) + tsp.distance(city_j, j_next)
@@ -57,6 +67,75 @@ class Exchange(Mutation):
 
         # 3. Compute the difference and add it to the previous fitness
         return new_distance - old_distance
+
+
+    def efficient_fitness_calculation_vectorized(self, individual: Individual, indices: np.ndarray) -> np.ndarray:
+        tour = np.array(individual.permutation, dtype=int)
+        dist = individual.tsp.get_distance_matrix()
+        n = len(tour)
+
+        indices = np.array(list(indices), dtype=int)
+        i_arr = indices[:, 0].copy()
+        j_arr = indices[:, 1].copy()
+
+        # Ensure i < j
+        swap_mask = i_arr > j_arr
+        i_arr[swap_mask], j_arr[swap_mask] = j_arr[swap_mask], i_arr[swap_mask]
+
+        # Get city numbers
+        city_i = tour[i_arr]
+        city_j = tour[j_arr]
+
+        # Circular neighbors
+        i_prev = tour[(i_arr - 1) % n]
+        i_next = tour[(i_arr + 1) % n]
+        j_prev = tour[(j_arr - 1) % n]
+        j_next = tour[(j_arr + 1) % n]
+
+        deltas = np.empty(len(i_arr), dtype=float)
+        # Masks
+        adj_mask = (j_arr == i_arr + 1)            # normal adjacent
+        first_last_mask = (i_arr == 0) & (j_arr == n - 1)  # first-last adjacency
+        non_adj_mask = ~(adj_mask | first_last_mask)
+
+        # 1. Normal adjacent swaps
+        if np.any(adj_mask):
+            old_adj = dist[i_prev[adj_mask], city_i[adj_mask]] + \
+                    dist[city_i[adj_mask], city_j[adj_mask]] + \
+                    dist[city_j[adj_mask], j_next[adj_mask]]
+            new_adj = dist[i_prev[adj_mask], city_j[adj_mask]] + \
+                    dist[city_j[adj_mask], city_i[adj_mask]] + \
+                    dist[city_i[adj_mask], j_next[adj_mask]]
+            deltas[adj_mask] = new_adj - old_adj
+
+        # 2. First-last swaps
+        if np.any(first_last_mask):
+            old_fl = dist[j_prev[first_last_mask], city_j[first_last_mask]] + \
+                    dist[city_j[first_last_mask], city_i[first_last_mask]] + \
+                    dist[city_i[first_last_mask], i_next[first_last_mask]]
+            new_fl = dist[j_prev[first_last_mask], city_i[first_last_mask]] + \
+                    dist[city_i[first_last_mask], city_j[first_last_mask]] + \
+                    dist[city_j[first_last_mask], i_next[first_last_mask]]
+            deltas[first_last_mask] = new_fl - old_fl
+
+        # 3. Non-adjacent swaps
+        if np.any(non_adj_mask):
+            old_non = dist[i_prev[non_adj_mask], city_i[non_adj_mask]] + \
+                    dist[city_i[non_adj_mask], i_next[non_adj_mask]] + \
+                    dist[j_prev[non_adj_mask], city_j[non_adj_mask]] + \
+                    dist[city_j[non_adj_mask], j_next[non_adj_mask]]
+            new_non = dist[i_prev[non_adj_mask], city_j[non_adj_mask]] + \
+                    dist[city_j[non_adj_mask], i_next[non_adj_mask]] + \
+                    dist[j_prev[non_adj_mask], city_i[non_adj_mask]] + \
+                    dist[city_i[non_adj_mask], j_next[non_adj_mask]]
+            deltas[non_adj_mask] = new_non - old_non
+        return deltas
+
+    @override
+    def __str__(self):
+        return "Exchange"
+
+
     
     # @override
     # def efficient_fitness_calculation(self, old_individual: Individual, new_individual: Individual, i: int, j: int) -> float:

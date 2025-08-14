@@ -48,8 +48,20 @@ class LocalSearch(TSP):
                 fitness_history = np.append(fitness_history, new_individual.fitness)
                 self.population[individual_index] = new_individual
                 pbar.set_description(f"Ind {individual_index} Fitness: {new_individual.fitness:.2f}")
+
+                # Stopping criterion: improvement in last 10 steps < 1%
+                recent_fitness = fitness_history[-10:].tolist()  # Get the last 10 fitness values
+                if len(recent_fitness) == 10:
+                    initial_fitness = recent_fitness[0]
+                    final_fitness = recent_fitness[-1]
+                    if initial_fitness != 0:  # avoid division by zero
+                        improvement = (initial_fitness - final_fitness) / abs(initial_fitness)
+                        if improvement < 0.01:
+                            print(f"Stopping early: <1% improvement over last 10 iterations at iteration {iteration}")
+                            break
             self.fitness_of_finished_individuals.append(fitness_history)
-            self.file_writer(fitness_history, name=f"fitness_history_individual")
+            path_prefix = self.filepath.removeprefix("datasets/").rsplit('.', 1)[0]  # Remove 'dataset/' and file extension
+            self.file_writer(fitness_history, name=f"{path_prefix}/{self.mutation}/Individual_{individual_index}_{len(self.population)}_fitness_history_individual")
         print(self.fitness_of_finished_individuals)
         
     def perform_one_step_optimized(self, current: Individual) -> Individual | None:
@@ -102,9 +114,20 @@ class LocalSearch(TSP):
     def get_best_neighbour_delta(self, current: Individual):
         best_delta = 0
         best_pair = None
-        for i, j in self.indices:
-            delta = self.mutation.efficient_fitness_calculation(current, i, j)
-            if delta < best_delta:
-                best_delta = delta
-                best_pair = (i, j)
+        # start =  time.time()
+        # for i, j in self.indices:
+        #     delta = self.mutation.efficient_fitness_calculation(current, i, j)
+        #     if delta < best_delta:
+        #         best_delta = delta
+        #         best_pair = (i, j)
+        # end = time.time() 
+        # print(f"New Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
+        # start = time.time()
+        deltas = self.mutation.efficient_fitness_calculation_vectorized(current, self.indices)
+        best_idx = np.argmin(deltas)
+        best_delta = deltas[best_idx]
+        best_pair = tuple(self.indices[best_idx])
+        # end = time.time() 
+        # print(f"New Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
+        # print(f"with delta {best_pair, best_delta}")
         return best_pair, current.fitness + best_delta

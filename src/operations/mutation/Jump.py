@@ -55,3 +55,42 @@ class Jump(Mutation):
                         tsp.distance(city_j, city_i)
 
         return new_distance - old_distance
+    
+    def efficient_fitness_calculation_vectorized(self, individual: Individual, indices: np.ndarray) -> np.ndarray:
+        """Vectorized delta calculation for Jump mutation."""
+        tour = np.array(individual.permutation, dtype=int)
+        dist = individual.tsp.get_distance_matrix()
+        n = len(tour)
+
+        indices = np.array(list(indices), dtype=int)
+        i_arr = indices[:, 0]
+        j_arr = indices[:, 1]
+
+        city_i = tour[i_arr]
+        i_prev = tour[(i_arr - 1) % n]
+        i_next = tour[(i_arr + 1) % n]
+
+        city_j = tour[j_arr]
+        j_prev = tour[(j_arr - 1) % n]
+        j_next = tour[(j_arr + 1) % n]
+
+        deltas = np.empty(len(i_arr), dtype=float)
+
+        # Mask for i > j
+        mask_ig = i_arr > j_arr
+
+        # Case: i > j
+        old_d_ig = dist[i_prev, city_i] + dist[city_i, i_next] + dist[j_prev, city_j]
+        new_d_ig = dist[i_prev, i_next] + dist[j_prev, city_i] + dist[city_i, city_j]
+        deltas[mask_ig] = new_d_ig[mask_ig] - old_d_ig[mask_ig]
+
+        # Case: i <= j
+        old_d_le = dist[i_prev, city_i] + dist[city_i, i_next] + dist[city_j, j_next]
+        new_d_le = dist[i_prev, i_next] + dist[j_next, city_i] + dist[city_j, city_i]
+        deltas[~mask_ig] = new_d_le[~mask_ig] - old_d_le[~mask_ig]
+
+        return deltas
+
+    @override
+    def __str__(self):
+        return "Jump"

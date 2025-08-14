@@ -15,4 +15,10 @@ class Mutation:
     def efficient_fitness_calculation(self, individual: Individual, i: int, j: int) -> None:
         if individual.fitness is None:
             individual.calculate_fitness()
+
+    def __str__(self):
+        return NotImplementedError("__str__ method must be implemented in subclasses.")
+
+    def __repr__(self):
+        return self.__str__()
             
