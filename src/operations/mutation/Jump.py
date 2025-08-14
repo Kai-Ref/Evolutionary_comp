@@ -24,27 +24,30 @@ class Jump(Mutation):
     
     @override
     def efficient_fitness_calculation(self, individual, i, j):
-        # Detect the edges that were removed/added and compute their difference
         n = len(individual.permutation)
         tsp = individual.tsp
-
-        # Wrap around indices
+            
         i_prev = (i - 1) % n
         i_next = (i + 1) % n
         j_prev = (j - 1) % n
         j_next = (j + 1) % n
 
-        # Old distances
-        old_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[i]) + \
-                       tsp.distance(individual.permutation[i], individual.permutation[i_next]) + \
-                       tsp.distance(individual.permutation[j_prev], individual.permutation[j]) + \
-                       tsp.distance(individual.permutation[j], individual.permutation[j_next])
 
-        # New distances
-        new_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[j]) + \
-                       tsp.distance(individual.permutation[j], individual.permutation[i_next]) + \
-                       tsp.distance(individual.permutation[j_prev], individual.permutation[i]) + \
-                       tsp.distance(individual.permutation[i], individual.permutation[j_next])
+        if i > j:
+            old_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[i]) + \
+                        tsp.distance(individual.permutation[i], individual.permutation[i_next]) + \
+                        tsp.distance(individual.permutation[j_prev], individual.permutation[j])
+                        
+            new_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[i_next]) + \
+                        tsp.distance(individual.permutation[j_prev], individual.permutation[i]) + \
+                        tsp.distance(individual.permutation[i], individual.permutation[j])
+        else:
+            old_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[i]) + \
+                        tsp.distance(individual.permutation[i], individual.permutation[i_next]) + \
+                        tsp.distance(individual.permutation[j], individual.permutation[j_next])
+                        
+            new_distance = tsp.distance(individual.permutation[i_prev], individual.permutation[i_next]) + \
+                        tsp.distance(individual.permutation[j_next], individual.permutation[i]) + \
+                        tsp.distance(individual.permutation[j], individual.permutation[i])
 
-        # Return the fitness difference
         return individual.fitness + (new_distance - old_distance)
