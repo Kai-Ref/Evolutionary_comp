@@ -6,6 +6,7 @@ from src.Individual import Individual
 from typing import Generator
 from tqdm import tqdm
 import time
+import os
 
 class LocalSearch(TSP):
     def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1, number_neighbors:int = 1, max_neighbours:int = -1):
@@ -30,7 +31,7 @@ class LocalSearch(TSP):
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
         for individual_index in range(len(self.population)):
-            fitness_history = np.array([self.population[individual_index].fitness])
+            fitness_history = [self.population[individual_index].fitness]
             pbar = tqdm(range(max_iterations), desc=f"Ind {individual_index} Fitness: {self.population[individual_index].fitness:.2f}")    
             for iteration in pbar:
                 # for _ in range(self.max_neighbours):
@@ -45,12 +46,12 @@ class LocalSearch(TSP):
                 if new_individual is None:
                     print(f"Individual {individual_index} reached local optimum, at iteration {iteration}")
                     break
-                fitness_history = np.append(fitness_history, new_individual.fitness)
+                fitness_history.append(new_individual.fitness)
                 self.population[individual_index] = new_individual
                 pbar.set_description(f"Ind {individual_index} Fitness: {new_individual.fitness:.2f}")
 
                 # Stopping criterion: improvement in last 10 steps < 1%
-                recent_fitness = fitness_history[-10:].tolist()  # Get the last 10 fitness values
+                recent_fitness = fitness_history[-10:]  # Get the last 10 fitness values
                 if len(recent_fitness) == 10:
                     initial_fitness = recent_fitness[0]
                     final_fitness = recent_fitness[-1]
@@ -59,10 +60,31 @@ class LocalSearch(TSP):
                         if improvement < 0.01:
                             print(f"Stopping early: <1% improvement over last 10 iterations at iteration {iteration}")
                             break
-            self.fitness_of_finished_individuals.append(fitness_history)
+            # self.fitness_of_finished_individuals.append(fitness_history)
             path_prefix = self.filepath.removeprefix("datasets/").rsplit('.', 1)[0]  # Remove 'dataset/' and file extension
-            self.file_writer(fitness_history, name=f"{path_prefix}/{self.mutation}/Individual_{individual_index}_{len(self.population)}_fitness_history_individual")
-        print(self.fitness_of_finished_individuals)
+            run_number = self.get_next_run_number(path_prefix, self.mutation)
+            self.file_writer(
+                fitness_history,
+                name=f"{path_prefix}/{self.mutation}/Individual_{run_number}_fitness_history_individual"
+            )
+            # self.file_writer(np.array(fitness_history), name=f"{path_prefix}/{self.mutation}/Individual_{individual_index}_fitness_history_individual")
+        # print(self.fitness_of_finished_individuals)
+    
+
+    def get_next_run_number(self, path_prefix, mutation):
+        folder = f"data/{path_prefix}/{mutation}"
+        os.makedirs(folder, exist_ok=True)  # create folder if it doesn't exist
+        existing_files = os.listdir(folder)
+        run_numbers = []
+        for f in existing_files:
+            if "Individual_" in f:
+                try:
+                    # Extract the number after "Individual_" and before "_fitness_history"
+                    num = int(f.split("Individual_")[1].split("_")[0])
+                    run_numbers.append(num)
+                except:
+                    continue
+        return max(run_numbers) + 1 if run_numbers else 1
         
     def perform_one_step_optimized(self, current: Individual) -> Individual | None:
         best_pair, best_fitness = self.get_best_neighbour_delta(current)
@@ -71,6 +93,9 @@ class LocalSearch(TSP):
             # mutate the individual, but do not update the fitness immediately, since we already calculated it
             new_individual = self.mutation.mutate_individual(current, i, j, update_fitness=False)
             new_individual.fitness = best_fitness 
+            # print(f"best {best_fitness}")
+            # new_individual.calculate_fitness()
+            # print(f"actual {new_individual.fitness}")
             return new_individual
         return None
     
@@ -112,8 +137,8 @@ class LocalSearch(TSP):
             yield self.mutation.mutate_individual(current, i, j, update_fitness=True)
 
     def get_best_neighbour_delta(self, current: Individual):
-        best_delta = 0
-        best_pair = None
+        # best_delta = 0
+        # best_pair = None
         # start =  time.time()
         # for i, j in self.indices:
         #     delta = self.mutation.efficient_fitness_calculation(current, i, j)
@@ -121,7 +146,9 @@ class LocalSearch(TSP):
         #         best_delta = delta
         #         best_pair = (i, j)
         # end = time.time() 
-        # print(f"New Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
+        # print(f"Old Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
+        best_delta = 0
+        best_pair = None
         # start = time.time()
         deltas = self.mutation.efficient_fitness_calculation_vectorized(current, self.indices)
         best_idx = np.argmin(deltas)

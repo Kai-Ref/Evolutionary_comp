@@ -28,6 +28,15 @@ class Jump(Mutation):
         tour = individual.permutation
         n = len(tour)
 
+        # if abs(i-j)==1:
+        #     # print(i, j)
+        #     return 0.0
+        
+        # special case: when i=0 and j=n-1, the tour distance remains unchanged (the same goes for the other way around)
+        if (i==0 and j==(n - 1)) or (j==0 and i==(n - 1)):
+            return 0.0
+        
+        
         city_i = tour[i]
         i_previous = tour[(i - 1) % n]
         i_next = tour[(i + 1) % n]
@@ -51,8 +60,8 @@ class Jump(Mutation):
                         tsp.distance(city_j, j_next)
                         
             new_distance = tsp.distance(i_previous, i_next) + \
-                        tsp.distance(j_next, city_i) + \
-                        tsp.distance(city_j, city_i)
+                        tsp.distance(city_j, city_i) + \
+                        tsp.distance(city_i, j_next) 
 
         return new_distance - old_distance
     
@@ -76,8 +85,13 @@ class Jump(Mutation):
 
         deltas = np.empty(len(i_arr), dtype=float)
 
-        # Mask for i > j
-        mask_ig = i_arr > j_arr
+        # special-case wrap-around adjacency (i=0, j=n-1) or (j=0, i=n-1)
+        adj_mask = ((i_arr == 0) & (j_arr == (n - 1))) | ((j_arr == 0) & (i_arr == (n - 1)))
+        deltas[adj_mask] = 0.0
+
+        # Mask for i > j  (parentheses are necessary!)
+        mask_ig = (i_arr > j_arr) & (~adj_mask)
+        mask_le = (~mask_ig) & (~adj_mask)
 
         # Case: i > j
         old_d_ig = dist[i_prev, city_i] + dist[city_i, i_next] + dist[j_prev, city_j]
@@ -86,8 +100,10 @@ class Jump(Mutation):
 
         # Case: i <= j
         old_d_le = dist[i_prev, city_i] + dist[city_i, i_next] + dist[city_j, j_next]
-        new_d_le = dist[i_prev, i_next] + dist[j_next, city_i] + dist[city_j, city_i]
-        deltas[~mask_ig] = new_d_le[~mask_ig] - old_d_le[~mask_ig]
+        # <-- fixed ordering here: city_i then j_next (matches scalar version)
+        new_d_le = dist[i_prev, i_next] + dist[city_j, city_i] + dist[city_i, j_next]
+
+        deltas[mask_le] = new_d_le[mask_le] - old_d_le[mask_le]
 
         return deltas
 
