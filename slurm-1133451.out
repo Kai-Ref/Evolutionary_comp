@@ -1,0 +1,17 @@
+Running dataset: usa13509.tsp
+Ind 0 Fitness: 2156784369.49:   0%|          | 0/1000 [00:00<?, ?it/s]Ind 0 Fitness: 2155792216.09:   0%|          | 0/1000 [04:55<?, ?it/s]Ind 0 Fitness: 2155792216.09:   0%|          | 1/1000 [04:55<81:54:57, 295.19s/it]Ind 0 Fitness: 2154824227.30:   0%|          | 1/1000 [10:18<81:54:57, 295.19s/it]Ind 0 Fitness: 2154824227.30:   0%|          | 2/1000 [10:18<86:25:46, 311.77s/it]Ind 0 Fitness: 2153860916.79:   0%|          | 2/1000 [15:58<86:25:46, 311.77s/it]Ind 0 Fitness: 2153860916.79:   0%|          | 3/1000 [15:58<89:55:08, 324.68s/it]Ind 0 Fitness: 2152906162.55:   0%|          | 3/1000 [1:18:06<89:55:08, 324.68s/it]Ind 0 Fitness: 2152906162.55:   0%|          | 4/1000 [1:18:07<461:35:53, 1668.43s/it]Ind 0 Fitness: 2151954936.62:   0%|          | 4/1000 [8:18:46<461:35:53, 1668.43s/it]Ind 0 Fitness: 2151954936.62:   0%|          | 5/1000 [8:18:46<2810:22:53, 10168.21s/it]slurmstepd: error: *** JOB 1133451 ON uc2n822 CANCELLED AT 2025-08-16T10:10:20 DUE TO TIME LIMIT ***
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n822
+Job ID: 1133451
+Cluster: uc3
+User/Group: ma_kreffert/ma_ma
+State: TIMEOUT (exit code 0)
+Nodes: 1
+Cores per node: 16
+CPU Utilized: 00:00:03
+CPU Efficiency: 0.00% of 5-13:25:04 core-walltime
+Job Wall-clock time: 08:20:19
+Memory Utilized: 43.92 GB
+Memory Efficiency: 64.24% of 68.36 GB (68.36 GB/node)
