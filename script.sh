@@ -12,8 +12,8 @@ conda activate evo
 
 # Example: list of datasets
 # datasets=("kroC100.tsp" "lin105.tsp" "kroD100.tsp" "st70.tsp" "pcb442.tsp") # "eil76.tsp" "eil101.tsp" "kroA100.tsp") ("pr2392.tsp")
-# datasets=("pr2392.tsp")
-datasets=("usa13509.tsp")
+datasets=("pr2392.tsp")
+# datasets=("usa13509.tsp")
 # algos=("local_j" "local_e" "local_i")
 algos=("local_i")
 # algos=("local_e")
