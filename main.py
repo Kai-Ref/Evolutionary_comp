@@ -6,7 +6,7 @@ from src.operations.mutation.TwoOpt import TwoOpt
 import argparse
 
 def main():
-    # Example call: python main.py -f datasets/eil51.tsp -m local_j -nn 10 -mn 100
+    # Example call: python main.py -f datasets/eil51.tsp -m local_j -pd -mi 1000 -ps 1
     # Parsing arguments: File path and model type 
     parser = argparse.ArgumentParser(description="Run TSP solver")
     parser.add_argument(
@@ -27,21 +27,6 @@ def main():
         action='store_true',
         default=False,
         help='If set, precompute distances (default: False)'
-    )
-    parser.add_argument(
-        '--number_neighbors', '-nn',
-        type=int, 
-        default=1,
-        required=False, 
-        help='Number of neighboring mutation combinations to try out'
-    )
-    
-    parser.add_argument(
-        '--max_neighbours', '-mn',
-        type=int,
-        default=-1,
-        required=False,
-        help='Maximum number of neighbours to consider (default: -1 means all)'
     )
     parser.add_argument(
         '--max_iterations', '-mi',
@@ -70,7 +55,7 @@ def main():
         else:
             raise ValueError("For local search the mutation must be provided.")
         ls = LocalSearch(args.file_path, distance_metric='euclidean', precompute_distances=args.precompute_distances, mutation=mutation, 
-                         population_size=args.population_size, number_neighbors=args.number_neighbors, max_neighbours=args.max_neighbours)
+                         population_size=args.population_size)
         ls.solve(max_iterations=args.max_iterations)
     elif args.model_type == 'evolutionary':
         pass

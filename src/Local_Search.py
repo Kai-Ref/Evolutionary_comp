@@ -9,48 +9,83 @@ import time
 import os
 
 class LocalSearch(TSP):
-    def __init__(self, filepath: str, distance_metric: str = 'euclidean', precompute_distances: bool = True, mutation=None, population_size: int = 1, number_neighbors:int = 1, max_neighbours:int = -1):
-        super().__init__(filepath=filepath, distance_metric=distance_metric, precompute_distances=precompute_distances, population_size=population_size, mutation=mutation)
-        self.fitness_of_finished_individuals=[]
-        # if max_neighbours > 0:
-        #     self.max_neighbours = max_neighbours
-        # else:
-        #     self.max_neighbours = self.node_coords.shape[0] * (self.node_coords.shape[0] - 1) // 2  # All unique pairs of nodes
-        # self.max_neighbours = max(1,int(self.max_neighbours/self.number_neighbors))
+    """
+    Local Search solver for the Traveling Salesman Problem.
 
-        # moved this into the init, since the indices are always the same
+    Inherits from TSP and performs local search using neighborhood mutation operations
+    (e.g., jump, exchange, 2-opt) to iteratively improve solutions.
+
+    Attributes:
+        fitness_of_finished_individuals (list): History of fitness values for completed individuals.
+        indices (list): List of all unique (i, j) index pairs for neighborhood operations.
+        number_neighbors (int): Number of neighbors to explore per iteration.
+    """
+    def __init__(self, 
+                filepath: str, 
+                distance_metric: str = 'euclidean', 
+                precompute_distances: bool = True, 
+                mutation=None, 
+                population_size: int = 1):
+        """
+        Initialize LocalSearch, the superclass TSP instance and local search parameters (Indices and number of neighbors).
+
+        Args:
+            filepath (str): Path to the TSP dataset file.
+            distance_metric (str): Distance metric to use ('euclidean' by default).
+            precompute_distances (bool): Whether to precompute the distance matrix to save computational complexity creep in iterations.
+            mutation: Mutation operator for generating neighbors.
+            population_size (int): Number of individuals in the population.
+        """
+
+        # First initialize the TSP superclass object
+        super().__init__(filepath=filepath, 
+                        distance_metric=distance_metric, 
+                        precompute_distances=precompute_distances, 
+                        population_size=population_size, 
+                        mutation=mutation)
+
+        self.fitness_of_finished_individuals=[]
+
+        # Create all indice combination once in advance to reduce computational load
         self.indices = ((i, j) for i in range(self.node_coords.shape[0]) for j in range(self.node_coords.shape[0]) if i != j)
         self.indices = list(self.indices)
-        if number_neighbors > 0:
-            if self.number_neighbors > len(self.indices):
-                raise ValueError(f"Number of neighbors {self.number_neighbors} exceeds the number of unique pairs {len(self.indices)}.")
-            self.number_neighbors = number_neighbors
-        else:
-            self.number_neighbors = len(self.indices)  # Use all unique pairs if number_neighbors is not set or <= 0
-    
+
     @override
     def solve(self, max_iterations: int = 1E4) -> None:
+        """
+        Run the local search on the population.
+
+        Iteratively improves each individual by exploring neighbors until
+        a stopping criterion is met.
+        
+        The stopping criteria implemented here is either:
+        - the maximum number of iterations (max_iterations) is reached, 
+        - less than 1% improvement over the last 10 iterations, 
+        - or no better neighbor exists.
+
+        After each iteration, the current fitness value is added to the fitness_history.
+        When a stopping criterion is met, the list is saved.
+
+        Args:
+            max_iterations (int): Maximum number of iterations per individual.
+        """
         for individual_index in range(len(self.population)):
             fitness_history = [self.population[individual_index].fitness]
             pbar = tqdm(range(max_iterations), desc=f"Ind {individual_index} Fitness: {self.population[individual_index].fitness:.2f}")    
             for iteration in pbar:
-                # for _ in range(self.max_neighbours):
-                # start =  time.time() 
-                # new_individual = self.perform_one_step(self.population[individual_index].copy())
-                # end = time.time() 
-                # print(f"Old Elapsed time: {end - start:.6f} seconds with Individual {new_individual}")
-                # start =  time.time()
-                new_individual = self.perform_one_step_optimized(self.population[individual_index].copy())
-                # end = time.time() 
-                # print(f"New Elapsed time: {end - start:.6f} seconds with Individual {new_individual}")
+                # Perform one optimized local search step
+                new_individual = self.perform_one_step(self.population[individual_index].copy())
+                
+                # Stop if no improvement found (local optimum)
                 if new_individual is None:
                     print(f"Individual {individual_index} reached local optimum, at iteration {iteration}")
                     break
+                
                 fitness_history.append(new_individual.fitness)
                 self.population[individual_index] = new_individual
                 pbar.set_description(f"Ind {individual_index} Fitness: {new_individual.fitness:.2f}")
 
-                # Stopping criterion: improvement in last 10 steps < 1%
+                # Stopping criterion: <1% improvement over last 10 steps
                 recent_fitness = fitness_history[-10:]  # Get the last 10 fitness values
                 if len(recent_fitness) == 10:
                     initial_fitness = recent_fitness[0]
@@ -60,101 +95,82 @@ class LocalSearch(TSP):
                         if improvement < 0.01:
                             print(f"Stopping early: <1% improvement over last 10 iterations at iteration {iteration}")
                             break
-            # self.fitness_of_finished_individuals.append(fitness_history)
-            path_prefix = self.filepath.removeprefix("datasets/").rsplit('.', 1)[0]  # Remove 'dataset/' and file extension
+            
+            # Save fitness history
+            path_prefix = self.filepath.removeprefix("datasets/").rsplit('.', 1)[0]
             run_number = self.get_next_run_number(path_prefix, self.mutation)
             self.file_writer(
                 fitness_history,
                 name=f"{path_prefix}/{self.mutation}/Individual_{run_number}_fitness_history_individual"
             )
-            # self.file_writer(np.array(fitness_history), name=f"{path_prefix}/{self.mutation}/Individual_{individual_index}_fitness_history_individual")
-        # print(self.fitness_of_finished_individuals)
     
 
     def get_next_run_number(self, path_prefix, mutation):
+        """
+        Determine the next run number for saving fitness history.
+
+        Args:
+            path_prefix (str): Prefix path for the dataset.
+            mutation: Mutation type used for the run.
+
+        Returns:
+            int: Next available run number.
+        """
         folder = f"data/{path_prefix}/{mutation}"
         os.makedirs(folder, exist_ok=True)  # create folder if it doesn't exist
         existing_files = os.listdir(folder)
         run_numbers = []
+
         for f in existing_files:
             if "Individual_" in f:
                 try:
-                    # Extract the number after "Individual_" and before "_fitness_history"
                     num = int(f.split("Individual_")[1].split("_")[0])
                     run_numbers.append(num)
                 except:
                     continue
+
         return max(run_numbers) + 1 if run_numbers else 1
         
-    def perform_one_step_optimized(self, current: Individual) -> Individual | None:
-        best_pair, best_fitness = self.get_best_neighbour_delta(current)
+    def perform_one_step(self, current: Individual) -> Individual | None:
+        """
+        Perform one local search step.
+
+        Args:
+            current (Individual): Current individual to improve.
+
+        Returns:
+            Individual or None: The improved individual or None if no improvement.
+        """
+        # 1. Retrieve the best possible neighbor 
+        best_pair, best_fitness = self.get_best_neighbor(current)
+
+        # 2. If there is a better neighbor, return it
         if best_pair and best_fitness < current.fitness:
             i, j = best_pair
             # mutate the individual, but do not update the fitness immediately, since we already calculated it
             new_individual = self.mutation.mutate_individual(current, i, j, update_fitness=False)
-            new_individual.fitness = best_fitness 
-            # print(f"best {best_fitness}")
-            # new_individual.calculate_fitness()
-            # print(f"actual {new_individual.fitness}")
+            new_individual.fitness = best_fitness
             return new_individual
         return None
-    
-    def perform_one_step(self, current: Individual) -> Individual | None:
-        neighbours = []
-        for idx, neighbour in zip(range(self.number_neighbors), self.get_next_neighbour(current)):
-            # neighbour.calculate_fitness() # Since we return the indivduals now, instead of overwriting, we can omit this
-            neighbours.append(neighbour) if neighbour.fitness < current.fitness else None
 
-        # Find the fittest neighbour and return it if it improves the fitness
-        best_neighbour = min(neighbours, key=lambda individual: individual.fitness) if neighbours else current
-        # print(f"Current fitness {current.fitness}, best neighbour fitness {best_neighbour.fitness}")
-        if best_neighbour.fitness < current.fitness:
-            return best_neighbour
-        else:
-            return None
-        
-    def shuffle_neighbour_indices(self) -> Generator[tuple[int, int], None, None]:
+    def get_best_neighbor(self, current: Individual):
         """
-        Generator that yields all unique (i, j) index pairs for neighbours, shuffled.
-        """
-        rng = np.random.default_rng()
-        rng.shuffle(self.indices)
-        for idx_pair in self.indices:
-            yield idx_pair
-        
-    def get_next_neighbour(self, current: Individual) -> Generator[Individual, None, None]:
-        """
-        Generator Function which returns the next neighbour. Systematically goes through all possible mutations. An unique mutation is characterized by (i, j) indices.
-        It returns None if all possible neighbours where already returned
-        """
-        # only shuffle indices if we select a neighbourhood subset, since the order is irrelevant when considering all indices
-        if len(self.indices) > self.number_neighbors:
-            indices = list(self.shuffle_neighbour_indices())
-        else:
-            indices = self.indices
+        Find the best neighbor using vectorized fitness calculation, based only on those edges that were changed.
 
-        for i, j in indices:
-            yield self.mutation.mutate_individual(current, i, j, update_fitness=True)
+        Args:
+            current (Individual): Current individual.
 
-    def get_best_neighbour_delta(self, current: Individual):
-        # best_delta = 0
-        # best_pair = None
-        # start =  time.time()
-        # for i, j in self.indices:
-        #     delta = self.mutation.efficient_fitness_calculation(current, i, j)
-        #     if delta < best_delta:
-        #         best_delta = delta
-        #         best_pair = (i, j)
-        # end = time.time() 
-        # print(f"Old Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
+        Returns:
+            tuple: (best index pair (i, j), best fitness)
+        """
         best_delta = 0
         best_pair = None
-        # start = time.time()
+
+        # performs vectorized fitness calculation
         deltas = self.mutation.efficient_fitness_calculation_vectorized(current, self.indices)
+
+        # select the best neighbor and return it with its fitness 
         best_idx = np.argmin(deltas)
         best_delta = deltas[best_idx]
         best_pair = tuple(self.indices[best_idx])
-        # end = time.time() 
-        # print(f"New Elapsed time: {end - start:.6f} seconds with delta {best_pair, best_delta}")
-        # print(f"with delta {best_pair, best_delta}")
         return best_pair, current.fitness + best_delta
