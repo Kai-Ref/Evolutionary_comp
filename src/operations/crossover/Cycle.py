@@ -46,7 +46,7 @@ class Cycle(Crossover):
                     loop_idx = i
                     break
             num_loops += 1
-        #now find the fitness of the children
+        #TODO:now find the fitness of the children
         
 
 

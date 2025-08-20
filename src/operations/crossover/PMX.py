@@ -46,6 +46,8 @@ class PMX(Crossover):
             if child1[r] == np.inf:
                 child1[r] = parent2.permutation[r]
 
+        #TODO: now calculate child2
+        #TODO: calc fitness
         return child1
 
 

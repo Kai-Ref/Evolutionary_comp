@@ -9,9 +9,11 @@ class Order(Crossover):
     #of the aleles from the second parent. 
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> Individual:
-        added_to_child = []
+        added_to_child_1 = []
+        added_to_child_2 = []
         parent_size = parent1.permutation.size()
-        child = np.full(parent_size, np.inf)
+        child1 = np.full(parent_size, np.inf)
+        child2 = np.full(parent_size, np.inf)
 
         #keep_start and keep_end are the start and end of the random selection from parent 1
         keep_end = np.random.randint(0, parent_size)
@@ -23,29 +25,38 @@ class Order(Crossover):
 
         #insertion from parent1 to child
         for i in range(keep_start, keep_end + 1):
-            child[i] = parent1.permutation[i] 
-            added_to_child.insert(-1, parent1.permutation[i])
+            child1[i] = parent1.permutation[i]
+            child2[i] = parent2.permutation[i] 
+            added_to_child_1.append(parent1.permutation[i])
+            added_to_child_2.append(parent2.permutation[i])
 
         keep_end += 1
         #c_free is the next available free slot in child
-        c_free = keep_end
+        c1_free, c2_free = keep_end, keep_end
 
         #loop throught the second parent to fill in gaps
-        while (np.inf in child):
+        while (np.inf in child1):
             if keep_end >= parent_size:
                 keep_end = 0
 
-            if c_free >= parent_size:
-                c_free = 0
+            if c1_free >= parent_size:
+                c1_free = 0
 
-            if (parent2[keep_end] not in added_to_child) and (child[c_free] == np.inf):
-                child[c_free] = parent2[keep_end]
-                added_to_child.insert(-1, parent2[keep_end])
-                c_free += 1
+            if (parent2.permutation[keep_end] not in added_to_child_1) and (child1[c1_free] == np.inf):
+                child1[c1_free] = parent2[keep_end]
+                added_to_child_1.append(parent2[keep_end])
+                c1_free += 1
+
+            if (parent1.permutation[keep_end] not in added_to_child_2) and (child2[c2_free] == np.inf):
+                child1[c1_free] = parent1.permutation[keep_end]
+                added_to_child_2.append(parent1.permutation[keep_end])
+                c1_free += 1
 
             keep_end += 1
 
-        return child
+        #TODO: calculate fitness here
+
+        return tuple(child1, child2)
    
     @override
     def efficient_fitness_calculation(self, individual: Individual) -> None:
