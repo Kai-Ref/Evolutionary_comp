@@ -1,0 +1,11 @@
+Before discussing the results, we clarify our assumptions. 
+Each local search explores the full neighborhood and selects the best neighbor. 
+The process stops when one of three criteria is met: 
+- a maximum of 1000 iterations, 
+- less than 1% improvement over the last 10 iterations, 
+- or no better neighbor exists.
+
+TwoOpt generally outperforms Jump and Exchange in both minimum and mean tour lengths across most datasets. 
+The exception is the largest dataset, USA13509, where the 1% improvement rule often stops the search early, as incremental improvements are rarely achieved, despite 10 iterations taking ~45 minutes.
+
+Between Jump and Exchange, Jump performs better on smaller datasets, while Exchange surpasses Jump on the two largest datasets, achieving the best overall performance there.

@@ -6,11 +6,16 @@ class Individual:
     permutation: np.ndarray
     fitness: float
     
-    def __init__(self, number_of_nodes: int, tsp = None):
-        self.permutation = np.random.permutation(number_of_nodes).tolist()
+    def __init__(self, number_of_nodes: int = None, tsp=None, permutation=None):
         self.tsp = tsp
-        self.is_local_optimum = False
-        self.calculate_fitness()
+
+        if permutation is not None:
+            self.permutation = permutation.copy()
+        elif number_of_nodes is not None:
+            self.permutation = np.random.permutation(number_of_nodes).tolist()
+            self.calculate_fitness()
+        else:
+            raise ValueError("Either number_of_nodes or permutation must be provided.")
 
     def copy(self):
         return copy.deepcopy(self)
