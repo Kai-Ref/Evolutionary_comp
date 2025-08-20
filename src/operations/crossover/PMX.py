@@ -9,10 +9,11 @@ class PMX(Crossover):
     #copies the rest from the other parent.
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> Individual:
-        c1_added = []
+        added_to_child = []
         parent_size = parent1.permutation.size()
         #creating a new blank array for the child with a junk value
         child1 = np.full(parent_size, np.inf)
+        child2 = np.full(parent_size, np.inf)
         keep_end = np.random.randint(0, parent_size)
 
         #randint breaks between (0,0)
@@ -23,24 +24,22 @@ class PMX(Crossover):
 
         #copies of parent 1 and 2 to make the crossover a bit easier
         p2_subsequence = []
-        p1_list = parent1.permutation.tolist()
-        p2_list = parent2.permutation.tolist()
 
         #steps 2-5 from the slides. it'll take too long to explain it here...
         #this also probably isn't the most efficient way...
         for i in range(keep_start, keep_end + 1):
             child1[i] = parent1.permutation[i] 
-            c1_added.insert(-1, parent1.permutation[i])
-            p2_subsequence.insert(-1, parent2.permutation[i])
+            added_to_child.append(parent1.permutation[i])
+            p2_subsequence.append(parent2.permutation[i])
 
             for j in range(keep_start, keep_end + 1):
                 if parent1.permutation[j] not in p2_subsequence:
-                    offset = p2_list.index(parent1.permutation[j])
+                    offset = np.where(parent2.permutation == parent1.permutation[j])
                     k = parent2.permutation[j]
-                    while(k in c1_added):
-                        k = parent2.permutation[p1_list.index(k)]
+                    while(k in added_to_child):
+                        k = parent2.permutation[np.where(parent1.permutation == k)]
                     child1[offset] = k
-                    c1_added.insert(-1, k)
+                    added_to_child.insert(-1, k)
 
         #step 6 from the slides
         for r in range(0, parent_size):

@@ -9,7 +9,7 @@ class Order(Crossover):
     #of the aleles from the second parent. 
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> Individual:
-        c_added = []
+        added_to_child = []
         parent_size = parent1.permutation.size()
         child = np.full(parent_size, np.inf)
 
@@ -24,13 +24,13 @@ class Order(Crossover):
         #insertion from parent1 to child
         for i in range(keep_start, keep_end + 1):
             child[i] = parent1.permutation[i] 
-            c_added.insert(-1, parent1.permutation[i])
+            added_to_child.insert(-1, parent1.permutation[i])
 
         keep_end += 1
         #c_free is the next available free slot in child
         c_free = keep_end
 
-        #loop throught the second parent in 
+        #loop throught the second parent to fill in gaps
         while (np.inf in child):
             if keep_end >= parent_size:
                 keep_end = 0
@@ -38,9 +38,9 @@ class Order(Crossover):
             if c_free >= parent_size:
                 c_free = 0
 
-            if (parent2[keep_end] not in c_added) and (child[c_free] == np.inf):
+            if (parent2[keep_end] not in added_to_child) and (child[c_free] == np.inf):
                 child[c_free] = parent2[keep_end]
-                c_added.insert(-1, parent2[keep_end])
+                added_to_child.insert(-1, parent2[keep_end])
                 c_free += 1
 
             keep_end += 1
