@@ -1,0 +1,30 @@
+Group Members:
+Reffert, Kai (1989953)
+Sharada, Bangamuarachchi
+Csizmadia, Gabriel
+Glastonbury, Dylan
+Gern, Marcel
+, Raiyan
+
+
+
+Contributions:
+
+Kai:
+- Worked on Task 1, 2 and 3: 
+    - Task 1: Fine tuned specific functionality and parts of the Indivdual class.
+    - Task 2:
+        - Implemented exchange and 2-opt mutation operations.
+        - Developed vectorized fitness evaluation for all three operations.
+        - Optimized the local search algorithm by considering solely the indices and switching to vectorized calculations.
+        - Ran all experiments and analyzed results.
+    - Task 3: Fine tuned specific functionality and parts of the Indivdual class.
+
+Marcel:
+- Set up and implemented plan/organization of the code layout, including modularity, inheritance, etc.
+- Worked on Task 1, 2 and 3: 
+    - Task 1: Implemented the layout for the TSP class and its modularity.
+    - Task 2:
+        - Implemented jump mutation operation.
+        - Implemented the LocalSearch class and its functionality. 
+    - Task 3: Implemented the Individual and Population classes.
