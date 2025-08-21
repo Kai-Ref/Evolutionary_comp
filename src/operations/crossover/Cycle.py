@@ -9,8 +9,8 @@ class Cycle(Crossover):
         added_to_child = []
         parent_size = parent1.permutation.size()
         #creating a new blank array for the child with a junk value
-        child1 = np.full(parent_size, np.inf)
-        child2 = np.full(parent_size, np.inf)
+        child1_tour = np.full(parent_size, np.inf)
+        child2_tour = np.full(parent_size, np.inf)
 
         loop_idx = 0
         num_loops = 0
@@ -21,22 +21,22 @@ class Cycle(Crossover):
             while (cycle_start != parent2.permutation[current_idx]):
                 #every other loop adds to the other parent
                 if (num_loops % 2 == 0):
-                    child1[current_idx] = parent1.permutation[current_idx]
-                    child2[current_idx] = parent2.permutation[current_idx]
+                    child1_tour[current_idx] = parent1.permutation[current_idx]
+                    child2_tour[current_idx] = parent2.permutation[current_idx]
                 else:
-                    child1[current_idx] = parent2.permutation[current_idx]
-                    child2[current_idx] = parent1.permutation[current_idx]
+                    child1_tour[current_idx] = parent2.permutation[current_idx]
+                    child2_tour[current_idx] = parent1.permutation[current_idx]
                 added_to_child.append(parent1.permutation[current_idx])
                 #idx in p1 of p2 town
                 current_idx = np.where(parent1.permutation == (parent2.permutation[current_idx]))
             
             #add end of cycle
             if (num_loops % 2 == 0):
-                child1[current_idx] = parent1.permutation[current_idx]
-                child2[current_idx] = parent2.permutation[current_idx]
+                child1_tour[current_idx] = parent1.permutation[current_idx]
+                child2_tour[current_idx] = parent2.permutation[current_idx]
             else:
-                child1[current_idx] = parent2.permutation[current_idx]
-                child2[current_idx] = parent1.permutation[current_idx]
+                child1_tour[current_idx] = parent2.permutation[current_idx]
+                child2_tour[current_idx] = parent1.permutation[current_idx]
             added_to_child.append(parent1.permutation[current_idx])
             current_idx = np.where(parent1.permutation == (parent2.permutation[current_idx]))
             
@@ -46,7 +46,15 @@ class Cycle(Crossover):
                     loop_idx = i
                     break
             num_loops += 1
-        #TODO:now find the fitness of the children
+        
+        child1 = Individual(parent_size, parent1.tsp)
+        child1.permutation = child1_tour.tolist()
+        child1.fitness = self.efficient_fitness_calculation()
+
+        child2 = Individual(parent_size, parent2.tsp)
+        child2.permutation = child1_tour.tolist()
+        child2.fitness = self.efficient_fitness_calculation()
+        return tuple(child1, child2)
         
 
 

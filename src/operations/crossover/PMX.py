@@ -12,8 +12,8 @@ class PMX(Crossover):
         added_to_child = []
         parent_size = parent1.permutation.size()
         #creating a new blank array for the child with a junk value
-        child1 = np.full(parent_size, np.inf)
-        child2 = np.full(parent_size, np.inf)
+        child1_tour = np.full(parent_size, np.inf)
+        child2_tour = np.full(parent_size, np.inf)
         keep_end = np.random.randint(0, parent_size)
 
         #randint breaks between (0,0)
@@ -28,7 +28,7 @@ class PMX(Crossover):
         #steps 2-5 from the slides. it'll take too long to explain it here...
         #this also probably isn't the most efficient way...
         for i in range(keep_start, keep_end + 1):
-            child1[i] = parent1.permutation[i] 
+            child1_tour[i] = parent1.permutation[i] 
             added_to_child.append(parent1.permutation[i])
             p2_subsequence.append(parent2.permutation[i])
 
@@ -38,17 +38,25 @@ class PMX(Crossover):
                     k = parent2.permutation[j]
                     while(k in added_to_child):
                         k = parent2.permutation[np.where(parent1.permutation == k)]
-                    child1[offset] = k
+                    child1_tour[offset] = k
                     added_to_child.insert(-1, k)
 
         #step 6 from the slides
         for r in range(0, parent_size):
-            if child1[r] == np.inf:
-                child1[r] = parent2.permutation[r]
+            if child1_tour[r] == np.inf:
+                child1_tour[r] = parent2.permutation[r]
 
         #TODO: now calculate child2
-        #TODO: calc fitness
-        return child1
+        
+        child1 = Individual(parent_size, parent1.tsp)
+        child1.permutation = child1_tour.tolist()
+        child1.fitness = self.efficient_fitness_calculation()
+
+        child2 = Individual(parent_size, parent2.tsp)
+        child2.permutation = child1_tour.tolist()
+        child2.fitness = self.efficient_fitness_calculation()        
+
+        return tuple(child1, child2)
 
 
     @override

@@ -5,30 +5,58 @@ import numpy as np
 
 class EdgeRecombination(Crossover):
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> None:
-            #TODO: continue writing this
-            child = np.full(parent_size, np.inf)
+    def xover(self, parent1: Individual, parent2: Individual) -> Individual:
+        parent_size = len(parent1.permutation)
+        child_tour = np.full(parent_size, np.inf)
+        edge_table = np.zeros((parent_size, parent_size), dtype=int)
+        #create edge table
+        for i in range(0, parent_size):
+            edge_table[parent1.permutation[i]][parent1.permutation[i-1]] += 1
+            edge_table[parent1.permutation[i]][parent1.permutation[(i+1)%parent_size]] += 1
+            edge_table[parent2.permutation[i]][parent2.permutation[i-1]] += 1
+            edge_table[parent2.permutation[i]][parent2.permutation[(i+1)%parent_size]] += 1
+        
+        node = np.random.randint(0, parent_size-1)
+        next_free_in_child = 0
+        remaining_nodes = list(range(0, parent_size))
 
-            parent_size = 4
-            edge_table = np.zeros((parent_size, parent_size))
-            #create edge table
-            for i in range(0, parent_size):
-                edge_table[parent1[i]][parent1[i-1]] += 1
-                edge_table[parent1[i]][parent1[(i+1)%parent_size]] += 1
-                edge_table[parent2[i]][parent2[i-1]] += 1
-                edge_table[parent2[i]][parent2[(i+1)%parent_size]] += 1
-            
-            node = np.random.randint(0, parent_size-1)
-            choices = []
-            free = 0
+        #start the edge recombination
+        while len(remaining_nodes) > 0:
+            #add node to child
+            child_tour[next_free_in_child] = node
+            next_free_in_child += 1
 
-            while len(child) < parent_size:
-                choices.append(node)
-                for e in edge_table:
-                    edge_table[e][node] = 0
+            #remove it from available and the table
+            remaining_nodes.remove(node)
+            for e in range(0, parent_size):
+                edge_table[e][node] = 0
+                edge_table[node][e] = 0
 
-                if (np.sum(edge_table[node]) > 0):
-                    adj_edges = np.where(choices == 2)
+            #check if current node has anything related to it
+            if (np.sum(edge_table[node]) > 0):
+                adj_edges = np.where(edge_table[node] == 2)
+                #first: pick adjectent edges (edge with value 2)
+                if(len(adj_edges[0])):
+                    node = adj_edges[0][0]
+                else:
+                    #then find the node with the smallest edges
+                    min_node = 999
+                    for j in edge_table[node]:
+                        j_sum = np.sum(edge_table[j])
+                        if(j_sum <= min_node):
+                            #if it's the smallest edge
+                            min_node = j_sum
+                            node = j
+
+            else:
+                #otherwise it's a random node that hasn't been selected yet
+                if(np.inf in child_tour):
+                    node = np.random.choice(remaining_nodes, 1)[0]
+
+        child = Individual(parent_size, parent1.tsp)
+        child.permutation = child_tour.tolist()
+        #edge recombination seems radically change the child compared to parents so just recalculate the fitness
+        child.fitness = self.efficient_fitness_calculation(child)
 
     @override
     def efficient_fitness_calculation(self, individual: Individual) -> None:
