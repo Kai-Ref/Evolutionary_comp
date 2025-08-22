@@ -8,10 +8,10 @@ class PMX(Crossover):
     #from the parents but if the parents share values in the slice, PMX includes additional values, then
     #copies the rest from the other parent.
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+    def xover(self, parent1: Individual, parent2: Individual) -> list:
         added_to_child1 = []
         added_to_child2 = []
-        parent_size = parent1.permutation.size()
+        parent_size = len(parent1.permutation)
         #creating a new blank array for the child with a junk value
         child1_tour = np.full(parent_size, np.inf)
         child2_tour = np.full(parent_size, np.inf)
@@ -70,20 +70,20 @@ class PMX(Crossover):
         child2.permutation = child1_tour.tolist()
         child2.fitness += self.efficient_fitness_calculation(child2, parent2, keep_start, keep_end)        
 
-        return tuple(child1, child2)
+        return list(child1, child2)
 
 
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:
-        #if our copied section is the parent, don't need to calculate
-        if(i == 0 and j==(n-1)):
-            return 0.0
-
         tsp = individual.tsp
         old_tour = parent.permutation
         new_tour = individual.permutation
         n = len(new_tour)
         difference = 0
+
+        #if our copied section is the parent, don't need to calculate
+        if(i == 0 and j==(n-1)):
+            return 0.0
 
         #re-calculate every edge except for edges that were shared
         for e in range(n-1):

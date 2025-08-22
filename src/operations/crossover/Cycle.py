@@ -5,9 +5,9 @@ import numpy as np
 
 class Cycle(Crossover):
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+    def xover(self, parent1: Individual, parent2: Individual) -> list:
         added_to_child = []
-        parent_size = parent1.permutation.size()
+        parent_size = len(parent1.permutation)
         #creating a new blank array for the child with a junk value
         child1_tour = np.full(parent_size, np.inf)
         child2_tour = np.full(parent_size, np.inf)
@@ -54,7 +54,7 @@ class Cycle(Crossover):
         child2 = Individual(parent_size, parent2.tsp)
         child2.permutation = child1_tour.tolist()
         child2.fitness += self.efficient_fitness_calculation(child2, parent2)
-        return tuple(child1, child2)
+        return [child1, child2]
         
 
 
