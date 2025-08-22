@@ -5,7 +5,7 @@ import numpy as np
 
 class Cycle(Crossover):
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> None:
+    def xover(self, parent1: Individual, parent2: Individual) -> tuple:
         added_to_child = []
         parent_size = parent1.permutation.size()
         #creating a new blank array for the child with a junk value
@@ -49,17 +49,32 @@ class Cycle(Crossover):
         
         child1 = Individual(parent_size, parent1.tsp)
         child1.permutation = child1_tour.tolist()
-        child1.fitness = self.efficient_fitness_calculation()
+        child1.fitness += self.efficient_fitness_calculation(child1, parent1)
 
         child2 = Individual(parent_size, parent2.tsp)
         child2.permutation = child1_tour.tolist()
-        child2.fitness = self.efficient_fitness_calculation()
+        child2.fitness += self.efficient_fitness_calculation(child2, parent2)
         return tuple(child1, child2)
         
 
 
 
     @override
-    def efficient_fitness_calculation(self, individual: Individual) -> None:
-        raise NotImplementedError("Efficient fitness calculation for %1 is not implemented yet.".format(self.__class__.__name__))
+    def efficient_fitness_calculation(self, individual: Individual, parent: Individual) -> float:
+        if (individual == parent):
+            return 0
+        
+        tsp = individual.tsp
+        old_tour = parent.permutation
+        new_tour = individual.permutation
+        n = len(new_tour)
+        difference = 0
+
+        for e in range(n):
+            old_distance = tsp.distance(old_tour[e], old_tour[(e+1)%n])
+            new_distance = tsp.distance(new_tour[e], new_tour[(e+1)%n])
+            difference += (new_distance - old_distance)
+
+        return difference
+    
     

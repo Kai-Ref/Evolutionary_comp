@@ -55,10 +55,19 @@ class EdgeRecombination(Crossover):
 
         child = Individual(parent_size, parent1.tsp)
         child.permutation = child_tour.tolist()
-        #edge recombination seems radically change the child compared to parents so just recalculate the fitness
         child.fitness = self.efficient_fitness_calculation(child)
+        return child
 
     @override
-    def efficient_fitness_calculation(self, individual: Individual) -> None:
-        raise NotImplementedError("Efficient fitness calculation for %1 is not implemented yet.".format(self.__class__.__name__))
+    def efficient_fitness_calculation(self, individual: Individual) -> float:
+        tsp = individual.tsp
+        new_tour = individual.permutation
+        n = len(new_tour)
+        difference = 0
+
+        for e in range(n):
+            distance = tsp.distance(new_tour[e], new_tour[(e+1)%n])
+            difference += distance
+
+        return difference
     
