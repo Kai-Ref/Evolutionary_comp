@@ -67,7 +67,7 @@ if [[ "$SKIP_RUNS" != "1" ]]; then
           echo "[skip] $inst pop=$pop seed=$seed (already have curves)"
           ((skipped++)) || true
         else
-          echo "python3 $SINGLE --instance $inst --pop $pop --seed $seed --gens $GENS --logdir $LOGDIR --pd --skip-existing $( [[ $STRICT_LEN == 1 ]] && echo --strict-len )" >> "$TMP"
+          echo "python3 $SINGLE --instance $inst --pop $pop --seed $seed --gens $GENS --logdir $LOGDIR --pd" >> "$TMP"
           ((queued++)) || true
         fi
       done
