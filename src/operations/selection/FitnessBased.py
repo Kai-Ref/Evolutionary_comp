@@ -22,7 +22,7 @@ class FitnessBased(Selection):
 
         # Create a new population with the selected individuals
         new_population = Population(population_size=num_to_select,
-                                    number_of_nodes=selected_individuals[0].permutation.size)
+                                    number_of_nodes=len(selected_individuals[0].permutation), tsp=selected_individuals[0].tsp)
 
         new_population.individuals = selected_individuals
 

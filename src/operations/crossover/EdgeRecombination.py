@@ -6,6 +6,11 @@ import numpy as np
 class EdgeRecombination(Crossover):
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> Individual:
+        """
+        Edge recombination takes the edges from the parents, adds them to a table, and reconstructs a child
+        via a set of rules. It'll first pick a common edge, then the smallest child duplicate, and finally
+        one and random.
+        """
         parent_size = len(parent1.permutation)
         child_tour = np.full(parent_size, np.inf)
         edge_table = np.zeros((parent_size, parent_size), dtype=int)

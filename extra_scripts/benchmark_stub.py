@@ -10,7 +10,7 @@ from src.operations.mutation.Exchange import Exchange
 def run_once(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
-    selection = Tournament() if selection_kind == "tournament" else FitnessBased(rng=rng)
+    selection = Tournament() if selection_kind == "tournament" else FitnessBased()
     ea = EvolutionaryAlgorithm(
         filepath=file_path,
         population_size=pop,
@@ -22,19 +22,19 @@ def run_once(file_path, seed, selection_kind, pop, gens):
         mutation_rate=0.2,
         elitism_k=2,
         seed=seed,
-        log_dir="results/ea_variant_a"
+        log_dir="results/ea_variant_b"
     )
     best = ea.solve(max_generations=gens)
     return best.fitness
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--instances", nargs="+", default=["datasets/eil51.tsp"])
-    p.add_argument("--selection", choices=["tournament","fitness"], default="tournament")
+    p.add_argument("--instances", nargs="+", default=["datasets/eil51.tsp", "datasets/eil76.tsp"])
+    p.add_argument("--selection", choices=["fitness"], default="fitness")
     p.add_argument("--pop", type=int, default=50)
-    p.add_argument("--gens", type=int, default=10)
-    p.add_argument("--runs", type=int, default=1)
-    p.add_argument("--seed_base", type=int, default=100)
+    p.add_argument("--gens", type=int, default=20000)
+    p.add_argument("--runs", type=int, default=2)
+    p.add_argument("--seed_base", type=int, default=500)
     args = p.parse_args()
 
     os.makedirs("results", exist_ok=True)

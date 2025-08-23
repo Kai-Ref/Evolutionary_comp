@@ -3,10 +3,9 @@ from src.Population import Population
 from src.Individual import Individual
 from src.FileWriter import FileWriter
 
-from src.operations.selection.Tournament import Tournament
 from src.operations.selection.FitnessBased import FitnessBased
-from src.operations.crossover.Order import Order
-from src.operations.mutation.Exchange import Exchange
+from src.operations.crossover.PMX import PMX
+from src.operations.crossover.Cycle import Cycle
 
 import numpy as np
 import random
@@ -16,7 +15,7 @@ from typing import Optional
 
 class EvolutionaryAlgorithm(TSP):
 
-    ### Variant A: Generational GA with elitism, configurable parent selection
+    ### Variant B: Generational GA with elitism, configurable parent selection
     ### OX crossover, and swap mutation
 
 
@@ -28,14 +27,13 @@ class EvolutionaryAlgorithm(TSP):
         precompute_distances: bool = True,
         # operators
         selection: Optional[object] = None,
-        crossover: Optional[object] = None,
-        mutation: Optional[object] = None,
+        crossover1: Optional[object] = None,
+        crossover2: Optional[object] = None,
         # hyperparameters
-        crossover_rate: float = 0.9,
-        mutation_rate: float = 0.2,
+        crossover_rate: float = 0.65,
         elitism_k: int = 2,
         seed: Optional[int] = None,
-        log_dir: str = "results/ea_variant_a",
+        log_dir: str = "results/ea_variant_b",
     ):
         # base problem
         super().__init__(
@@ -52,13 +50,12 @@ class EvolutionaryAlgorithm(TSP):
         np.random.seed(seed if seed is not None else None)
 
         # operators
-        self.selection = selection or Tournament(self.population, 3)
-        self.crossover = crossover or Order(rng=self.rng)
-        self.mutation = mutation or Exchange()
+        self.selection = selection or FitnessBased(self.population, 3)
+        self.crossover1 = crossover1
+        self.crossover2 = crossover2
 
         # hyperparams
         self.crossover_rate = float(crossover_rate)
-        self.mutation_rate = float(mutation_rate)
         self.elitism_k = int(elitism_k)
 
         # logging
@@ -87,20 +84,18 @@ class EvolutionaryAlgorithm(TSP):
     def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple:
         #returns tuple[Individual, Individual]
         if self.rng.random() < self.crossover_rate:
-            return self.crossover.xover(p1, p2)
+            if self.rng.random() < 0.5:
+                return self.crossover1.xover(p1, p2)
+            else:
+                return self.crossover2.xover(p1, p2)
+            
         # clone parents
         c1 = Individual(number_of_nodes=None, tsp=p1.tsp, permutation=p1.permutation.copy())
         c1.fitness = p1.fitness
         c2 = Individual(number_of_nodes=None, tsp=p2.tsp, permutation=p2.permutation.copy())
         c2.fitness = p2.fitness
         return (c1, c2)
-
-    def _maybe_mutate(self, child: Individual) -> Individual:
-        if self.rng.random() < self.mutation_rate:
-            n = len(child.permutation)
-            i, j = self.rng.sample(range(n), 2)
-            child = self.mutation.mutate_individual(child, i, j, update_fitness=True)
-        return child
+    
 
     def _log_arrays(self, instance_name: str, seed: Optional[int], best_hist: list[float], mean_hist: list[float]):
         seed_folder = f"seed_{seed}" if seed is not None else "seed_none"
@@ -139,8 +134,6 @@ class EvolutionaryAlgorithm(TSP):
 
             for (p1, p2) in self._select_parents(pop, n_pairs):
                 (c1, c2) = self._maybe_crossover(p1, p2)
-                c1 = self._maybe_mutate(c1)
-                c2 = self._maybe_mutate(c2)
                 next_inds.extend([c1, c2])
 
             # if odd top up using selection
@@ -149,7 +142,6 @@ class EvolutionaryAlgorithm(TSP):
                 lone = sel.individuals[0]
                 clone = Individual(number_of_nodes=None, tsp=lone.tsp, permutation=lone.permutation.copy())
                 clone.fitness = lone.fitness
-                clone = self._maybe_mutate(clone)
                 next_inds.append(clone)
 
             # swap populations
@@ -163,7 +155,7 @@ class EvolutionaryAlgorithm(TSP):
             best_history.append(best.fitness)
             mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
             if(_ in [2000, 5000, 10000, 20000]):
-                print(f"{_} mean: {best}")
+                print(f"{_} mean: {best.fitness}")
 
 
         # logs

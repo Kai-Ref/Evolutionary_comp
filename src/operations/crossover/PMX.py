@@ -4,11 +4,13 @@ from typing import override
 import numpy as np
 
 class PMX(Crossover):
-    #Partially Mixed Crossover is similar to Order crossover in that it tries to keeps an arbitary portion
-    #from the parents but if the parents share values in the slice, PMX includes additional values, then
-    #copies the rest from the other parent.
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+        """
+        Partially Mixed Crossover is similar to Order crossover in that it tries to keeps an arbitary portion
+        from the parents but if the parents share values in the slice, PMX includes additional values, then
+        copies the rest from the other parent.
+        """
         added_to_child1 = []
         added_to_child2 = []
         parent_size = len(parent1.permutation)
@@ -62,6 +64,7 @@ class PMX(Crossover):
             if child2_tour[r] == np.inf:
                 child2_tour[r] = parent1.permutation[r]
 
+        #finalise children
         child1 = Individual(parent_size, parent1.tsp)
         child1.permutation = child1_tour.tolist()
         child1.fitness += self.efficient_fitness_calculation(child1, parent1, keep_start, keep_end)
