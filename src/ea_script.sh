@@ -25,7 +25,7 @@ SINGLE="extra_scripts/run_evol_alg_c.py"
 [[ -f "$SINGLE" ]] || { echo "ERROR: missing $SINGLE" >&2; exit 1; }
 chmod +x "$SINGLE" || true
 
-# Helper: is a run already done?
+# Helper function to check if a run is already completed
 is_done() {
   local inst="$1" pop="$2" seed="$3"
   local best="$LOGDIR/$inst/pop_${pop}/seed_${seed}/best_cost_per_generation.npy"

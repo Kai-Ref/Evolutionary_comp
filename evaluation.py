@@ -12,7 +12,7 @@ def curve_path(base: str, inst: str, pop: int, seed: int) -> str:
 def parse_checkpoints(cp_str: str):
     return [int(x) for x in cp_str.split(",")] if cp_str else [2000,5000,10000,20000]
 
-# ---- infer number of nodes to print instance-specific schedule ----
+# Infer number of nodes to print instance-specific schedule 
 def tsp_num_nodes(inst: str, datasets_dir="datasets") -> int:
     path = os.path.join(datasets_dir, f"{inst}.tsp")
     n = 0
@@ -34,7 +34,7 @@ def tsp_num_nodes(inst: str, datasets_dir="datasets") -> int:
         pass
     return n
 
-# ---- same size-aware schedules as your EA ----
+# same size-aware schedules as the EA
 def size_aware_weights(n: int):
     # (TwoOpt, Jump, Exchange)
     if n <= 100:   return (0.65, 0.25, 0.10)
@@ -43,21 +43,13 @@ def size_aware_weights(n: int):
     return (0.30, 0.20, 0.50)
 
 def size_aware_strength_probability(n: int):
-    # P(apply 1/2/3 mutations)
+    # P(applying 1 or 2 or 3 mutations)
     if n <= 100:   return (0.70, 0.20, 0.10)
     if n <= 500:   return (0.60, 0.30, 0.10)
     if n <= 3000:  return (0.50, 0.30, 0.20)
     return (0.40, 0.35, 0.25)
 
 def read_checkpoints_and_final(base: str, inst: str, pop: int, seeds: int, checkpoints, reducer: str):
-    """
-    Returns:
-      agg_checkpoints: np.array of len(checkpoints) aggregated across seeds
-      used: number of seeds used
-      min_final: min over seeds of each run's final best-so-far value (arr[-1])
-      mean_final: mean over seeds of arr[-1]
-    Partial runs are allowed (for checkpoints we use last available gen in that run).
-    """
     rows, finals = [], []
     used = 0
     for seed in range(1, seeds + 1):
@@ -67,7 +59,7 @@ def read_checkpoints_and_final(base: str, inst: str, pop: int, seeds: int, check
         try:
             arr = np.load(fp)
             if arr.size == 0: continue
-            # checkpoint values (fallback to last if run shorter)
+            # checkpoint values will fallback to last if run shorter
             vals = [float(arr[min(g, len(arr)-1)]) for g in checkpoints]
             rows.append(vals)
             finals.append(float(arr[-1]))

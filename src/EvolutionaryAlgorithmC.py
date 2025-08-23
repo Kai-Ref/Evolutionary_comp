@@ -9,6 +9,11 @@ from src.Population import Population
 from src.Individual import Individual
 from src.FileWriter import FileWriter
 
+#  Mutation operators 
+from src.operations.mutation.TwoOpt import TwoOpt
+from src.operations.mutation.Jump import Jump
+from src.operations.mutation.Exchange import Exchange
+
 #  Local (minimization) Tournament selection 
 class MinTournament:
     """Minimization tournament selection for TSP (lower fitness is better)."""
@@ -31,16 +36,11 @@ class MinTournament:
         new_pop.individuals = selected
         return new_pop
 
-#  Mutation ops 
-from src.operations.mutation.TwoOpt import TwoOpt
-from src.operations.mutation.Jump import Jump
-from src.operations.mutation.Exchange import Exchange
-
 
 class EvolutionaryAlgorithmC(TSP):
     """
-    Variant C: Generational, mutation-only EA with elitism + diversity options.
-    - Selection: MinTournament(k=3) by default (minimization).
+    Variant C: Generational, mutation-only EA with elitism + diversity options 
+    - Selection: MinTournament(k=3) by default 
     """
 
     def __init__(
@@ -189,6 +189,7 @@ class EvolutionaryAlgorithmC(TSP):
             newcomer = Individual(number_of_nodes=n_nodes, tsp=self)  # random perm; fitness computed in ctor
             pop.individuals[idx] = newcomer
 
+    # Testing 
     def log_arrays(self, instance_name: str, seed: Optional[int], best_hist: List[float], mean_hist: List[float]):
         pop_n = len(self.population.individuals)
         folder = os.path.join(self.log_dir_base, instance_name, f"pop_{pop_n}", f"seed_{seed}")
