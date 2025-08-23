@@ -1,11 +1,12 @@
-# evaluation.py for testing EA Variant C (mutation-only)
+# evaluation.py — EA Variant C (mutation-only) with schedule + Min/Mean + checkpoints
+# Reads: results/ea_variant_c/<instance>/pop_<N>/seed_<seed>/best_cost_per_generation.npy
+# Writes: results/EA_mutation_results.txt
 
 import os, argparse
 import numpy as np
 
-DATASETS = ["eil51","eil76"]
+DATASETS = ["eil51","eil76","eil101"]
 POPS = [20, 50, 100, 200]
-SEP = "-" * 112
 
 def curve_path(base: str, inst: str, pop: int, seed: int) -> str:
     return os.path.join(base, inst, f"pop_{pop}", f"seed_{seed}", "best_cost_per_generation.npy")
@@ -13,63 +14,123 @@ def curve_path(base: str, inst: str, pop: int, seed: int) -> str:
 def parse_checkpoints(cp_str: str):
     return [int(x) for x in cp_str.split(",")] if cp_str else [2000,5000,10000,20000]
 
-def read_checkpoints(base: str, inst: str, pop: int, seeds: int, checkpoints, gens: int, reducer: str):
-    rows, used = [], 0
+# ---- infer number of nodes to print instance-specific schedule ----
+def tsp_num_nodes(inst: str, datasets_dir="datasets") -> int:
+    path = os.path.join(datasets_dir, f"{inst}.tsp")
+    n = 0
+    in_nodes = False
+    try:
+        with open(path, "r") as f:
+            for line in f:
+                s = line.strip()
+                if not s: continue
+                if s.upper().startswith("DIMENSION"):
+                    try: return int(s.split(":")[1])
+                    except Exception: pass
+                if s.upper() == "NODE_COORD_SECTION": in_nodes = True; continue
+                if s.upper() == "EOF": break
+                if in_nodes:
+                    parts = s.split()
+                    if len(parts) >= 3: n += 1
+    except FileNotFoundError:
+        pass
+    return n
+
+# ---- same size-aware schedules as your EA ----
+def size_aware_weights(n: int):
+    # (TwoOpt, Jump, Exchange)
+    if n <= 100:   return (0.65, 0.25, 0.10)
+    if n <= 500:   return (0.55, 0.25, 0.20)
+    if n <= 3000:  return (0.45, 0.25, 0.30)
+    return (0.30, 0.20, 0.50)
+
+def size_aware_strength_probability(n: int):
+    # P(apply 1/2/3 mutations)
+    if n <= 100:   return (0.70, 0.20, 0.10)
+    if n <= 500:   return (0.60, 0.30, 0.10)
+    if n <= 3000:  return (0.50, 0.30, 0.20)
+    return (0.40, 0.35, 0.25)
+
+def read_checkpoints_and_final(base: str, inst: str, pop: int, seeds: int, checkpoints, reducer: str):
+    """
+    Returns:
+      agg_checkpoints: np.array of len(checkpoints) aggregated across seeds
+      used: number of seeds used
+      min_final: min over seeds of each run's final best-so-far value (arr[-1])
+      mean_final: mean over seeds of arr[-1]
+    Partial runs are allowed (for checkpoints we use last available gen in that run).
+    """
+    rows, finals = [], []
+    used = 0
     for seed in range(1, seeds + 1):
         fp = curve_path(base, inst, pop, seed)
         if not os.path.exists(fp):
             continue
         try:
             arr = np.load(fp)
-            # pick a value at each checkpoint or last available if not yet reached
+            if arr.size == 0: continue
+            # checkpoint values (fallback to last if run shorter)
             vals = [float(arr[min(g, len(arr)-1)]) for g in checkpoints]
             rows.append(vals)
+            finals.append(float(arr[-1]))
             used += 1
         except Exception:
             continue
     if not rows:
-        return None, 0
+        return None, 0, None, None
     A = np.vstack(rows)
     agg = A.mean(axis=0) if reducer == "mean" else A.min(axis=0)
-    return agg, used
+    return agg, used, float(np.min(finals)), float(np.mean(finals))
 
 def main():
-    ap = argparse.ArgumentParser(description="Summarize EA mutation-only results.")
-    ap.add_argument("--variant_dir", type=str, default="results/ea_variant_c",
-                    help="Root directory where EA C saves runs.")
-    ap.add_argument("--out", type=str, default="results/EA_mutation_results.txt",
-                    help="Where to write the table.")
-    ap.add_argument("--seeds", type=int, default=30,
-                    help="How many seeds to aggregate (1..N). Missing seeds are ignored.")
-    ap.add_argument("--gens", type=int, default=20000,
-                    help="Target generations per run (for info only; partial runs still summarized).")
-    ap.add_argument("--checkpoints", type=str, default="2000,5000,10000,20000",
-                    help="Comma-separated checkpoints to report.")
-    ap.add_argument("--reducer", choices=["mean","min"], default="mean",
-                    help="Aggregate across seeds with mean (default) or min.")
+    ap = argparse.ArgumentParser(description="Summarize EA mutation-only results (+schedule + Min/Mean).")
+    ap.add_argument("--variant_dir", type=str, default="results/ea_variant_c")
+    ap.add_argument("--out", type=str, default="results/EA_mutation_results_two.txt")
+    ap.add_argument("--seeds", type=int, default=30)
+    ap.add_argument("--checkpoints", type=str, default="2000,5000,10000,20000")
+    ap.add_argument("--reducer", choices=["mean","min"], default="mean")
     args = ap.parse_args()
 
     checkpoints = parse_checkpoints(args.checkpoints)
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
-    header = f"{'Instance':<10} | {'Pop':>3} | {'Seeds':>5} | {'Gens':>5} | " + " | ".join([f'Gen={g:>6}' for g in checkpoints])
+    # Build header with schedule + Min/Mean + checkpoints
+    cp_headers = [f"Gen={g}" for g in checkpoints]
+    header = (
+        f"{'Instance':<10} | {'Pop':>3} | {'Seeds':>5} | "
+        f"{'W(T/J/E)':>10} | {'P(1/2/3)':>10} | {'Min':>10} | {'Mean':>10} | "
+        + " | ".join(f"{h:>10}" for h in cp_headers)
+    )
+    SEP = "-" * len(header)
+
+    os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     lines = []
     lines.append(SEP)
     lines.append("Variant: EA (Mutation-only)")
-    lines.append(f"Seeds requested: {args.seeds} | Reducer: {args.reducer} | Target gens per run: {args.gens}")
+    lines.append(f"Seeds requested: {args.seeds} | Reducer (checkpoints): {args.reducer}")
     lines.append(SEP)
     lines.append(header)
     lines.append(SEP)
 
     for inst in DATASETS:
+        n = tsp_num_nodes(inst)
+        wt = size_aware_weights(n)
+        pr = size_aware_strength_probability(n)
+        w_str = f"{wt[0]:.2f}/{wt[1]:.2f}/{wt[2]:.2f}"
+        p_str = f"{pr[0]:.2f}/{pr[1]:.2f}/{pr[2]:.2f}"
+
         for pop in POPS:
-            agg, used = read_checkpoints(args.variant_dir, inst, pop, args.seeds, checkpoints, args.gens, args.reducer)
+            agg, used, min_final, mean_final = read_checkpoints_and_final(
+                args.variant_dir, inst, pop, args.seeds, checkpoints, args.reducer
+            )
             if agg is None:
-                lines.append(f"{inst:<10} | {pop:>3} | {0:>5} | {args.gens:>5} | " + " | ".join([f'{"NA":>8}']*len(checkpoints)))
+                vals = " | ".join([f"{'NA':>10}"] * len(checkpoints))
+                lines.append(f"{inst:<10} | {pop:>3} | {used:>5} | {w_str:>10} | {p_str:>10} | "
+                             f"{'NA':>10} | {'NA':>10} | {vals}")
             else:
-                vals = " | ".join([f"{v:>8.2f}" for v in agg])
-                lines.append(f"{inst:<10} | {pop:>3} | {used:>5} | {args.gens:>5} | {vals}")
+                cp_vals = " | ".join([f"{v:>10.2f}" for v in agg])
+                lines.append(f"{inst:<10} | {pop:>3} | {used:>5} | {w_str:>10} | {p_str:>10} | "
+                             f"{min_final:>10.2f} | {mean_final:>10.2f} | {cp_vals}")
         lines.append(SEP)
 
     report = "\n".join(lines)
