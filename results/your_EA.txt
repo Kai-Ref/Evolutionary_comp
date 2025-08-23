@@ -1,3 +1,4 @@
+EA-A:
 instance=eil51, selection=tournament, pop=50, gens=10, runs=1, mean=1465.769, std=0.000
 instance=eil51, selection=tournament, pop=50, gens=10, runs=1, mean=1465.769, std=0.000
 instance=eil51, selection=tournament, pop=50, gens=10, runs=1, mean=1465.769, std=0.000
@@ -8,5 +9,6 @@ instance=lin105, selection=tournament, pop=20, gens=20000, runs=1, mean=98481.83
 instance=lin105, selection=tournament, pop=50, gens=20000, runs=1, mean=95198.278, std=0.000
 instance=lin105, selection=tournament, pop=100, gens=20000, runs=1, mean=98753.164, std=0.000
 instance=lin105, selection=tournament, pop=200, gens=20000, runs=1, mean=95292.272, std=0.000
+EA-B:
 instance=eil51, selection=fitness, pop=50, gens=20000, runs=2, mean=932.125, std=69.784
 instance=eil76, selection=fitness, pop=50, gens=20000, runs=2, mean=1527.326, std=34.438
