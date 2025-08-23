@@ -253,7 +253,8 @@ class EvolutionaryAlgorithmC(TSP):
 
 # Testing 
 DATASETS = [
-    "eil51","eil76"
+    "eil51","eil76", "st70", "kroA100", "kroC100", "kroD100", "lin105", "pcb442", \
+            "pr2392", "usa13509"
 ]
 POPS = [20, 50, 100, 200]
 VARIANT_DIR = "results/ea_variant_c"

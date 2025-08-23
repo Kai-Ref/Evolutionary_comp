@@ -2,7 +2,8 @@
 import os, argparse
 import numpy as np
 
-DATASETS = ["eil51","eil76","eil101"]
+DATASETS = ["eil51","eil76","eil101", "st70", "kroA100", "kroC100", "kroD100", "lin105", "pcb442", \
+            "pr2392", "usa13509"]
 POPS = [20, 50, 100, 200]
 
 def curve_path(base: str, inst: str, pop: int, seed: int) -> str:
