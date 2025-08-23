@@ -261,9 +261,7 @@ class EvolutionaryAlgorithmC(TSP):
 # Grid runner + summarizer
 # ==========================
 DATASETS = [
-    "eil51","eil76","eil101","st70",
-    "kroA100","kroC100","kroD100","lin105",
-    "pcb442","pr2392","usa13509"
+    "eil51","eil76"
 ]
 POPS = [20, 50, 100, 200]
 VARIANT_DIR = "results/ea_variant_c"
@@ -363,7 +361,7 @@ def parse_checkpoints(cp_str: str) -> List[int]:
 def main():
     ap = argparse.ArgumentParser(description="EA Variant C (mutation-only): run grid + summarize.")
     ap.add_argument("--run-grid", action="store_true", help="Run missing/short combos to completion before summarizing.")
-    ap.add_argument("--seeds", type=int, default=30, help="Number of seeds per combo.")
+    ap.add_argument("--seeds", type=int, default=5, help="Number of seeds per combo.")
     ap.add_argument("--gens", type=int, default=20000, help="Generations per run.")
     ap.add_argument("--checkpoints", type=str, default="2000,5000,10000,20000",
                     help="Comma-separated checkpoint gens.")
