@@ -1,7 +1,4 @@
 # evaluation.py — EA Variant C (mutation-only) with schedule + Min/Mean + checkpoints
-# Reads: results/ea_variant_c/<instance>/pop_<N>/seed_<seed>/best_cost_per_generation.npy
-# Writes: results/EA_mutation_results.txt
-
 import os, argparse
 import numpy as np
 
