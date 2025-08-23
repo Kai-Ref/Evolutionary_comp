@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=16     # Number of CPUs per GPU (16 for A100)
 #SBATCH --ntasks-per-node=1    # Number of tasks per node (1 in this case)
 
-module load devel/miniforge
+set -euo pipefail
 
 JOBS="${JOBS:-$(nproc)}"
 SEEDS="${SEEDS:-30}"
