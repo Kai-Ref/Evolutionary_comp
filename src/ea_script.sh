@@ -11,7 +11,7 @@ INSTANCES="${INSTANCES:-eil51 eil76 eil101 st70 kroA100 kroC100 kroD100 lin105 p
 
 # evaluation options
 EVAL_SCRIPT="${EVAL_SCRIPT:-evaluation.py}"        # the schedule+Min/Mean+checkpoints evaluator
-EVAL_OUT="${EVAL_OUT:-results/EA_mutation_results_three.txt}"
+EVAL_OUT="${EVAL_OUT:-results/EA_mutation_results_two.txt}"
 CHECKPOINTS="${CHECKPOINTS:-2000,5000,10000,20000}"
 REDUCER="${REDUCER:-mean}"                         # mean|min
 
