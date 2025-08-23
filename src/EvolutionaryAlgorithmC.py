@@ -15,26 +15,24 @@ from src.operations.mutation.Jump import Jump
 from src.operations.mutation.Exchange import Exchange
 
 #  Local (minimization) Tournament selection 
+class _Selected:
+    """Lightweight wrapper so callers can keep using .individuals."""
+    def __init__(self, individuals): 
+        self.individuals = individuals
+
 class MinTournament:
     """Minimization tournament selection for TSP (lower fitness is better)."""
     def __init__(self, k: int = 3, rng: random.Random | None = None):
         self.k = k
         self.rng = rng or random.Random()
 
-    def __call__(self, population: Population, num_to_select: int) -> Population:
-        selected = []
+    def __call__(self, population: Population, num_to_select: int):
+        winners = []
+        inds = population.individuals
         for _ in range(num_to_select):
-            competitors = self.rng.sample(population.individuals, self.k)
-            winner = min(competitors, key=lambda ind: ind.fitness)  # MIN
-            selected.append(winner)
-
-        n_nodes = len(population.individuals[0].permutation)
-        tsp_obj = population.individuals[0].tsp
-        new_pop = Population(population_size=num_to_select,
-                             number_of_nodes=n_nodes,
-                             tsp=tsp_obj)
-        new_pop.individuals = selected
-        return new_pop
+            competitors = self.rng.sample(inds, self.k)
+            winners.append(min(competitors, key=lambda ind: ind.fitness))  # MIN
+        return _Selected(winners)   
 
 
 class EvolutionaryAlgorithmC(TSP):
