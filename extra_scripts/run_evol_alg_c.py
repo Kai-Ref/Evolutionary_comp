@@ -40,7 +40,7 @@ def main():
 
     # Skip if already done
     best_path, mean_path = curve_paths(args.logdir, args.instance, args.pop, args.seed)
-    if args.skip-existing or args.strict_len:  # honor either flag being set
+    if args.skip_existing or args.strict_len:  # honor either flag being set
         if done_enough(best_path, mean_path, args.gens, args.strict_len):
             print(f"[skip] {args.instance} pop={args.pop} seed={args.seed} (exists)", flush=True)
             sys.exit(0)
