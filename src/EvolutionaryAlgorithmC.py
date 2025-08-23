@@ -9,7 +9,7 @@ from src.Population import Population
 from src.Individual import Individual
 from src.FileWriter import FileWriter
 
-# -------- Local (minimization) Tournament selection ----------
+#  Local (minimization) Tournament selection 
 class MinTournament:
     """Minimization tournament selection for TSP (lower fitness is better)."""
     def __init__(self, k: int = 3, rng: random.Random | None = None):
@@ -31,7 +31,7 @@ class MinTournament:
         new_pop.individuals = selected
         return new_pop
 
-# -------- Mutation ops (reuse your implementations) ----------
+#  Mutation ops 
 from src.operations.mutation.TwoOpt import TwoOpt
 from src.operations.mutation.Jump import Jump
 from src.operations.mutation.Exchange import Exchange
@@ -41,10 +41,6 @@ class EvolutionaryAlgorithmC(TSP):
     """
     Variant C: Generational, mutation-only EA with elitism + diversity options.
     - Selection: MinTournament(k=3) by default (minimization).
-    - Mutation: choose among (TwoOpt, Jump, Exchange) with size-aware weights.
-                Apply 1–3 mutations per child (more for larger instances).
-    - Optional: memetic 2-opt polish on a small elite slice + immigrants for diversity.
-    - Logs: results/ea_variant_c/<instance>/pop_<N>/seed_<seed>/best/mean_cost_per_generation.npy
     """
 
     def __init__(
@@ -115,7 +111,7 @@ class EvolutionaryAlgorithmC(TSP):
             if ind.fitness is None:
                 ind.calculate_fitness()
 
-    # ---------- size-aware schedules ----------
+    # size-aware schedules 
     def size_aware_weights(self, n: int) -> Tuple[float, float, float]:
         # (TwoOpt, Jump, Exchange)
         if n <= 100:
@@ -138,7 +134,7 @@ class EvolutionaryAlgorithmC(TSP):
         else:
             return (0.40, 0.35, 0.25)
 
-    # ---------- helpers ----------
+    # Helper Functions
     def elitism(self, pop: Population, k: int) -> list[Individual]:
         return sorted(pop.individuals, key=lambda ind: ind.fitness)[:max(0, k)]
 
@@ -201,7 +197,7 @@ class EvolutionaryAlgorithmC(TSP):
         self.file_writer(np.array(best_hist), "best_cost_per_generation.npy")
         self.file_writer(np.array(mean_hist), "mean_cost_per_generation.npy")
 
-    # ---------- public API ----------
+    # public API
     def solve(self, max_generations: int = 20000) -> Individual:
         pop = self.population
         n = len(pop.individuals)
@@ -255,10 +251,7 @@ class EvolutionaryAlgorithmC(TSP):
         self.log_arrays(instance_name, self.seed, best_history, mean_history)
         return best
 
-
-# ==========================
-# Grid runner + summarizer
-# ==========================
+# Testing 
 DATASETS = [
     "eil51","eil76"
 ]
@@ -290,9 +283,7 @@ def ensure_run(inst: str, pop: int, seed: int, gens: int) -> None:
     ea.solve(max_generations=gens)
 
 def read_checkpoints(inst: str, pop: int, seeds: int, checkpoints: List[int], gens: int, reducer: str):
-    """
-    Aggregate values at checkpoints across seeds that have >= gens+1 entries.
-    """
+    
     rows, used = [], 0
     for seed in range(1, seeds + 1):
         fp = curve_path(inst, pop, seed)
@@ -312,9 +303,7 @@ def read_checkpoints(inst: str, pop: int, seeds: int, checkpoints: List[int], ge
     return agg, used
 
 def run_grid(seeds: int, gens: int, checkpoints: List[int], reducer: str, run_missing: bool):
-    """
-    Optionally run missing combos, then summarize to /results/EA_mutation_results.txt
-    """
+    
     os.makedirs(os.path.dirname(OUT_TXT), exist_ok=True)
     SEP = "-" * 112
 

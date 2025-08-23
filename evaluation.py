@@ -1,6 +1,4 @@
-# evaluation.py — summarize EA Variant C (mutation-only)
-# Reads: results/ea_variant_c/<instance>/pop_<N>/seed_<seed>/best_cost_per_generation.npy
-# Writes: results/EA_mutation_results.txt
+# evaluation.py for testing EA Variant C (mutation-only)
 
 import os, argparse
 import numpy as np
@@ -16,10 +14,6 @@ def parse_checkpoints(cp_str: str):
     return [int(x) for x in cp_str.split(",")] if cp_str else [2000,5000,10000,20000]
 
 def read_checkpoints(base: str, inst: str, pop: int, seeds: int, checkpoints, gens: int, reducer: str):
-    """
-    Aggregate values at checkpoints across seeds that exist.
-    If a curve is shorter than 'gens', we take the last available value (so you can summarize partial runs).
-    """
     rows, used = [], 0
     for seed in range(1, seeds + 1):
         fp = curve_path(base, inst, pop, seed)
@@ -27,7 +21,7 @@ def read_checkpoints(base: str, inst: str, pop: int, seeds: int, checkpoints, ge
             continue
         try:
             arr = np.load(fp)
-            # pick value at each checkpoint, or last available if not yet reached
+            # pick a value at each checkpoint or last available if not yet reached
             vals = [float(arr[min(g, len(arr)-1)]) for g in checkpoints]
             rows.append(vals)
             used += 1
