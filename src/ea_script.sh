@@ -28,7 +28,7 @@ mkdir -p "$LOGDIR" "$(dirname "$EVAL_OUT")"
 # ---------- choose single-run driver ----------
 SINGLE=""
 if [[ -x extra_scripts/run_evol_alg_c.py ]]; then
-  SINGLE="extra_scriptscripts/run_evol_alg_c.py"
+  SINGLE="extra_scripts/run_evol_alg_c.py"
 elif [[ -x extra_scripts/run_evol_alg_c.py ]]; then
   SINGLE="extra_scripts/run_evol_alg_c.py"
 elif [[ -f extra_scripts/run_evol_alg_c.py ]]; then
