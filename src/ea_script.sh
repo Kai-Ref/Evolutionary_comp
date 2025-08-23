@@ -9,7 +9,7 @@
 set -euo pipefail
 
 JOBS="${JOBS:-$(nproc)}"
-SEEDS="${SEEDS:-30}"
+SEEDS="${SEEDS:-10}"
 GENS="${GENS:-20000}"
 LOGDIR="${LOGDIR:-results/ea_variant_c}"
 POPS="${POPS:-20 50 100 200}"
