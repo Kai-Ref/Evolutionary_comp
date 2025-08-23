@@ -5,13 +5,13 @@ set -euo pipefail
 JOBS="${JOBS:-$(nproc)}"                           # parallel workers
 SEEDS="${SEEDS:-30}"                               # seeds per (instance,pop)
 GENS="${GENS:-20000}"                              # generations per run
-LOGDIR="${LOGDIR:-results/ea_variant_c_two}"           # curve output root
+LOGDIR="${LOGDIR:-results/ea_variant_c}"           # curve output root
 POPS="${POPS:-20 50 100 200}"                      # population sizes
 INSTANCES="${INSTANCES:-eil51 eil76 eil101 st70 kroA100 kroC100 kroD100 lin105 pcb442 pr2392 usa13509}"
 
 # evaluation options
 EVAL_SCRIPT="${EVAL_SCRIPT:-evaluation.py}"        # the schedule+Min/Mean+checkpoints evaluator
-EVAL_OUT="${EVAL_OUT:-results/EA_mutation_results_two.txt}"
+EVAL_OUT="${EVAL_OUT:-results/EA_mutation_results_three.txt}"
 CHECKPOINTS="${CHECKPOINTS:-2000,5000,10000,20000}"
 REDUCER="${REDUCER:-mean}"                         # mean|min
 
