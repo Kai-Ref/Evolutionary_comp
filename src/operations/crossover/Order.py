@@ -53,14 +53,14 @@ class Order(Crossover):
 
 
         child1 = Individual(parent_size, parent1.tsp)
-        child1.permutation = child1_tour.tolist()
+        child1.permutation = child1_tour.astype(int).tolist()
         child1.fitness += child1.fitness + self.efficient_fitness_calculation(child1, parent1, seq_i, seq_j)
 
         child2 = Individual(parent_size, parent2.tsp)
-        child2.permutation = child1_tour.tolist()
+        child2.permutation = child1_tour.astype(int).tolist()
         child2.fitness += child2.fitness + self.efficient_fitness_calculation(child2, parent2, seq_i, seq_j)        
 
-        return [child1, child2]
+        return (child1, child2)
    
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:

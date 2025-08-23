@@ -10,7 +10,7 @@ from src.operations.mutation.Exchange import Exchange
 def run_once(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
-    selection = Tournament(k=3, rng=rng) if selection_kind == "tournament" else FitnessBased(rng=rng)
+    selection = Tournament() if selection_kind == "tournament" else FitnessBased(rng=rng)
     ea = EvolutionaryAlgorithm(
         filepath=file_path,
         population_size=pop,

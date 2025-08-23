@@ -54,7 +54,7 @@ class EdgeRecombination(Crossover):
                     node = np.random.choice(remaining_nodes, 1)[0]
 
         child = Individual(parent_size, parent1.tsp)
-        child.permutation = child_tour.tolist()
+        child.permutation = child_tour.astype(int).tolist()
         child.fitness = self.efficient_fitness_calculation(child)
         return child
 

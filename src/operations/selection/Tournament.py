@@ -8,7 +8,7 @@ class Tournament(Selection):
     @override
     def __call__(self, population: Population, num_to_select: int) -> Population:
         new_population = Population(population_size=num_to_select,
-                                    number_of_nodes=population.individuals[0].permutation.size)
+                                    number_of_nodes=len(population.individuals[0].permutation), tsp=population.individuals[0].tsp)
 
         for _ in range(num_to_select):
             competitors = random.sample(population.individuals, 2)

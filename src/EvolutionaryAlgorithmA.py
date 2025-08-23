@@ -52,7 +52,7 @@ class EvolutionaryAlgorithm(TSP):
         np.random.seed(seed if seed is not None else None)
 
         # operators
-        self.selection = selection or Tournament(k=3, rng=self.rng)
+        self.selection = selection or Tournament(self.population, 3)
         self.crossover = crossover or Order(rng=self.rng)
         self.mutation = mutation or Exchange()
 
@@ -71,10 +71,11 @@ class EvolutionaryAlgorithm(TSP):
                 ind.calculate_fitness()
 
 
-    def _elitism(self, pop: Population, k: int) -> list[Individual]:
+    def _elitism(self, pop: Population, k: int) -> list:
         return sorted(pop.individuals, key=lambda ind: ind.fitness)[:max(0, k)]
 
-    def _select_parents(self, pop: Population, n_pairs: int) -> list[tuple[Individual, Individual]]:
+    def _select_parents(self, pop: Population, n_pairs: int) -> list:
+        #returns list[tuple[Individual, Individual]]
         #pick 2 per pair (with replacement)
         pairs = []
         for _ in range(n_pairs):
@@ -83,7 +84,8 @@ class EvolutionaryAlgorithm(TSP):
             pairs.append((p1, p2))
         return pairs
 
-    def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple[Individual, Individual]:
+    def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple:
+        #returns tuple[Individual, Individual]
         if self.rng.random() < self.crossover_rate:
             return self.crossover.xover(p1, p2)
         # clone parents
@@ -91,7 +93,7 @@ class EvolutionaryAlgorithm(TSP):
         c1.fitness = p1.fitness
         c2 = Individual(number_of_nodes=None, tsp=p2.tsp, permutation=p2.permutation.copy())
         c2.fitness = p2.fitness
-        return c1, c2
+        return (c1, c2)
 
     def _maybe_mutate(self, child: Individual) -> Individual:
         if self.rng.random() < self.mutation_rate:
@@ -136,7 +138,7 @@ class EvolutionaryAlgorithm(TSP):
             next_inds: list[Individual] = elites.copy()
 
             for (p1, p2) in self._select_parents(pop, n_pairs):
-                c1, c2 = self._maybe_crossover(p1, p2)
+                (c1, c2) = self._maybe_crossover(p1, p2)
                 c1 = self._maybe_mutate(c1)
                 c2 = self._maybe_mutate(c2)
                 next_inds.extend([c1, c2])
