@@ -1,4 +1,12 @@
-set -euo pipefail
+#!/bin/bash
+#SBATCH -p cpu_il  # cpu_il, cpu or highmem
+#SBATCH -n 1                   # Number of tasks (1 for single node)
+#SBATCH -t 500           # Time limit (10 minutes for debugging purposes)
+#SBATCH --mem=70000             # Memory request (adjust as needed)
+#SBATCH --cpus-per-task=16     # Number of CPUs per GPU (16 for A100)
+#SBATCH --ntasks-per-node=1    # Number of tasks per node (1 in this case)
+
+module load devel/miniforge
 
 JOBS="${JOBS:-$(nproc)}"
 SEEDS="${SEEDS:-30}"
