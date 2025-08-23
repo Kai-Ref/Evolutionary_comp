@@ -1,4 +1,3 @@
-# src/EvolutionaryAlgorithmC.py
 from __future__ import annotations
 
 import os, sys, argparse, random
