@@ -1,12 +1,10 @@
 Group Members:
 Reffert, Kai (1989953)
-Sharada, Bangamuarachchi
-Csizmadia, Gabriel
-Glastonbury, Dylan (1883934)
-Gern, Marcel
-, Raiyan
-
-
+Sharada, Bangamuarachchi (a1874722)
+Csizmadia, Gabriel (a1852152)
+Glastonbury, Dylan
+Gern, Marcel (1991159)
+Rahman, Md Raiyan (a1872756)
 
 Contributions:
 
@@ -29,23 +27,28 @@ Marcel:
         - Implemented the LocalSearch class and its functionality. 
     - Task 3: Implemented the Individual and Population classes.
 
-Dylan:
-- Helped Marcel plan the organization of the program
-- Worked on Task 4, 6:
-    -Task 4:
-        -Implemented all Crossover Operations (Order, PMX, Cycles, EdgeRecombination)
-    -Task 6:
-        - Designed the second evolutionary algorithm (type B: crossover-only)
+Sharada:
+- Worked on Task 5 and 6 (Selection + Evolutionary Algorithm):
+    - Task 5:
+        - Implemented parent selection operators (Tournament and Fitness-Proportional).
+    - Task 6:
+        - Implemented the EvolutionaryAlgorithm class and Variant A.
+        - Integrated Order Crossover (OX) and Exchange (swap) mutation operators.
+        - Added seeding for reproducibility and logging of per-generation results.
+        - Developed benchmarking and validation scripts (quick_validate.py, benchmark_stub.py).
+        - Performed validation runs on TSPlib instance eil51 and generated results for handover.
 
-Gabriel
-- Worked on Task 5:
-    - Implemented all Selection Operations (Fitness, Tournament, Elitism)
+Gabriel:
+- Worked on Task 5
+    - Task 5:
+        - Implemented selection operators: (Elitism, FitnessBased and Tournament) in main branch.
 
-Raiyan
-- Worked on Task 6:
-    - Implemented the EvolutionaryAlgorithm class
-    - Designed the first evolutionary algorithm (type A: crossover+mutation)
 
-Bangamuarachchi
-- Worked on Task 6:
-    - Designed the third evolutionary algorithm (type C: mutation only)
+Raiyan:
+- Worked on Task 6
+    - Task 6: 
+        - Implemented the EvolutionaryAlgorithm base class and EA Variant C.
+        - Ran benchmarking tests for variant C to ensure it performed better than Local search.
+        - Ran benchmarking tests for all the Variants and analyzed the results. 
+        - Implemented benchmark_stub.py to test the best EA Variant.
+        - Ran tests for the best EA variant and stored the results in results/your_EA.txt.
