@@ -39,6 +39,7 @@ Sharada:
         - Performed validation runs on TSPlib instance eil51 and generated results for handover.
 
 Gabriel:
+- Wrote readme.txt
 - Worked on Task 5
     - Task 5:
         - Implemented selection operators: (Elitism, FitnessBased and Tournament) in main branch.
