@@ -4,11 +4,12 @@ from typing import override
 import numpy as np
 
 class Order(Crossover):
-    #Order Crossover takes two parent Individuals as an arguement and returns ONE single child.
-    #As per the lecture, the child retains a random sequence from the first parent and fills the rest
-    #of the aleles from the second parent. 
     @override
     def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+        """Order Crossover takes two parent Individuals as an arguement and returns two children.
+        As per the lecture, the child retains a random sequence from the first parent and fills the rest
+        of the aleles from the second parent. rhe inverse happens with child 2.
+        """
         added_to_child_1 = []
         added_to_child_2 = []
         parent_size = len(parent1.permutation)
@@ -51,16 +52,16 @@ class Order(Crossover):
 
             keep_end = (keep_end + 1) % parent_size
 
-
+        #finalise children
         child1 = Individual(parent_size, parent1.tsp)
-        child1.permutation = child1_tour.tolist()
+        child1.permutation = child1_tour.astype(int).tolist()
         child1.fitness += child1.fitness + self.efficient_fitness_calculation(child1, parent1, seq_i, seq_j)
 
         child2 = Individual(parent_size, parent2.tsp)
-        child2.permutation = child1_tour.tolist()
+        child2.permutation = child1_tour.astype(int).tolist()
         child2.fitness += child2.fitness + self.efficient_fitness_calculation(child2, parent2, seq_i, seq_j)        
 
-        return [child1, child2]
+        return (child1, child2)
    
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:

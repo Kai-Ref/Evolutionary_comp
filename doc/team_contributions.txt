@@ -2,7 +2,7 @@ Group Members:
 Reffert, Kai (1989953)
 Sharada, Bangamuarachchi
 Csizmadia, Gabriel
-Glastonbury, Dylan
+Glastonbury, Dylan (1883934)
 Gern, Marcel
 , Raiyan
 
@@ -28,3 +28,24 @@ Marcel:
         - Implemented jump mutation operation.
         - Implemented the LocalSearch class and its functionality. 
     - Task 3: Implemented the Individual and Population classes.
+
+Dylan:
+- Helped Marcel plan the organization of the program
+- Worked on Task 4, 6:
+    -Task 4:
+        -Implemented all Crossover Operations (Order, PMX, Cycles, EdgeRecombination)
+    -Task 6:
+        - Designed the second evolutionary algorithm (type B: crossover-only)
+
+Gabriel
+- Worked on Task 5:
+    - Implemented all Selection Operations (Fitness, Tournament, Elitism)
+
+Raiyan
+- Worked on Task 6:
+    - Implemented the EvolutionaryAlgorithm class
+    - Designed the first evolutionary algorithm (type A: crossover+mutation)
+
+Bangamuarachchi
+- Worked on Task 6:
+    - Designed the third evolutionary algorithm (type C: mutation only)

@@ -5,7 +5,12 @@ import numpy as np
 
 class Cycle(Crossover):
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> list:
+    def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+        """
+        Cycle Crossover looks for cycles in the towns in parent 1 and 2. After a cycle has been found, 
+        the cycle from parent 1 is added to child 1 and vice versa parent 2. Every other cycle is added
+        to the other child. 
+        """
         added_to_child = []
         parent_size = len(parent1.permutation)
         #creating a new blank array for the child with a junk value
@@ -47,14 +52,15 @@ class Cycle(Crossover):
                     break
             num_loops += 1
         
+        #finalise children
         child1 = Individual(parent_size, parent1.tsp)
-        child1.permutation = child1_tour.tolist()
+        child1.permutation = child1_tour.astype(int).tolist()
         child1.fitness += self.efficient_fitness_calculation(child1, parent1)
 
         child2 = Individual(parent_size, parent2.tsp)
-        child2.permutation = child1_tour.tolist()
+        child2.permutation = child2_tour.astype(int).tolist()
         child2.fitness += self.efficient_fitness_calculation(child2, parent2)
-        return [child1, child2]
+        return (child1, child2)
         
 
 
