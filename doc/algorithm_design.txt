@@ -1,0 +1,4 @@
+
+The second genetic algorithm has been designed to use two crossover operators and no mutation operators. The selection method used for this evolutionary algorithm will be a fitness-proportional method. 
+Compared to the more all-around first algorithm, the second algorithm should rapidly converge to a local optimum as crossover operations are good at exploring the search space. 
+The biggest issue with crossover is that they tend to get stuck in local optima and are unable to escape them efficiently. We theorize that this will happen with our second algorithm, where it will converge locally but not globally.
