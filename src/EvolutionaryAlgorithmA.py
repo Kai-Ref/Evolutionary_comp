@@ -74,7 +74,7 @@ class EvolutionaryAlgorithm(EA):
         np.random.seed(seed if seed is not None else None)
 
         # operators
-        self.selection = selection or Tournament(self.population, 3)
+        self.selection = selection or _MinTournament(k=3, rng=self.rng)
         self.crossover = self._crossover_ops[0] if self._crossover_ops else (crossover or Order(rng=self.rng))
         self.mutation = self.mutation or Exchange()
 
