@@ -1,4 +1,3 @@
-# src/EvolutionaryAlgorithmC.py
 from __future__ import annotations
 
 import os
@@ -8,22 +7,24 @@ from typing import Optional, Sequence, Tuple, List
 import numpy as np
 
 from src.EvolutionaryAlgorithm import EvolutionaryAlgorithm as EA
+from src.Population import Population
+from src.Individual import Individual
 
-# mutation operators
+# Importing mutation operators
 from src.operations.mutation.TwoOpt import TwoOpt
 from src.operations.mutation.Jump import Jump
 from src.operations.mutation.Exchange import Exchange
 
 
-# --- Variant C-specific selection (minimization tournament) ---
+#  local (minimization) tournament selection
 class _Selected:
-    """Wrapper matching teammates' selectors: exposes `.individuals`."""
+    # Lightweight wrapper so caller functions can keep using .individuals 
     def __init__(self, individuals: List[Individual]):
         self.individuals = individuals
 
 
 class MinTournament:
-    """Minimization tournament selection for TSP (lower fitness is better)."""
+    # Minimization tournament selection for TSP (lower fitness is better in this case) 
     def __init__(self, k: int = 3, rng: Optional[random.Random] = None):
         self.k = k
         self.rng = rng or random.Random()
@@ -33,14 +34,14 @@ class MinTournament:
         winners: List[Individual] = []
         for _ in range(num_to_select):
             competitors = self.rng.sample(inds, self.k)
-            winners.append(min(competitors, key=lambda ind: ind.fitness))
+            winners.append(min(competitors, key=lambda ind: ind.fitness))  # MIN
         return _Selected(winners)
 
 
 class EvolutionaryAlgorithm(EA):
 
-    ### Variant C: Generational GA with elitism, mutation-only
-    ### with optional memetic polish and immigrant injection
+    # Variant C: Generational GA with elitism, mutation-only
+    # optional memetic polish + immigrant injection
 
     def __init__(
         self,
@@ -49,8 +50,8 @@ class EvolutionaryAlgorithm(EA):
         distance_metric: str = "euclidean",
         precompute_distances: bool = True,
         # operators
-        selection: Optional[object] = None,                 # defaults to MinTournament(k=3)
-        mutation_ops: Optional[Sequence[object]] = None,    # defaults to [TwoOpt, Jump, Exchange]
+        selection: Optional[object] = None,                 # default: MinTournament(k=3)
+        mutation_ops: Optional[Sequence[object]] = None,    # default: [TwoOpt, Jump, Exchange]
         # hyperparameters
         mutation_rate: float = 1.0,
         elitism_k: int = 2,
@@ -59,7 +60,7 @@ class EvolutionaryAlgorithm(EA):
         # mutation scheduling
         mutation_weights: Optional[Tuple[float, float, float]] = None,        # (TwoOpt, Jump, Exchange)
         mutation_strength_probs: Optional[Tuple[float, float, float]] = None, # P(apply 1/2/3 mutations)
-        # optional diversity / memetic
+        # diversity / memetic
         immigrant_rate: float = 0.10,
         immigrant_period: int = 100,
         elite_memetic_frac: float = 0.10,
@@ -72,8 +73,8 @@ class EvolutionaryAlgorithm(EA):
             precompute_distances=precompute_distances,
             population_size=population_size,
             selection=selection or MinTournament(k=3, rng=random.Random(seed)),
-            crossover=None,                 # mutation-only: no crossover ops
-            mutation=None,                  # we override _maybe_mutate
+            crossover=None,                 # mutation-only: no crossover operations
+            mutation=None,                  # override _maybe_mutate
             crossover_rate=0.0,
             mutation_rate=mutation_rate,
             elitism_k=elitism_k,
@@ -81,10 +82,11 @@ class EvolutionaryAlgorithm(EA):
             log_dir=log_dir,
         )
 
-        # RNG
+        # RNG Setup
         self.seed = seed
         self.rng = random.Random(seed)
-        np.random.seed(seed if seed is not None else None)
+        if seed is not None:
+            np.random.seed(seed)
 
         # operators
         self.mutation_ops = list(mutation_ops) if mutation_ops is not None else [TwoOpt(), Jump(), Exchange()]
@@ -92,12 +94,12 @@ class EvolutionaryAlgorithm(EA):
         self.mutation_weights = mutation_weights or self.size_aware_weights(n_nodes)
         self.mutation_strength_probs = mutation_strength_probs or self.size_aware_strength_probability(n_nodes)
 
-        # hyperparams
+        # hyperparameters
         self.mutation_rate = float(mutation_rate)
         self.elitism_k = int(elitism_k)
 
         # logging
-        # (Handled by the base EA; keeping section name for consistency)
+        # (handled by base class)
 
         # initial population fitness computation test
         for ind in self.population.individuals:
@@ -133,7 +135,7 @@ class EvolutionaryAlgorithm(EA):
 
     # overrides
     def _maybe_crossover(self, p1: Individual, p2: Individual) -> Tuple[Individual, Individual]:
-        # mutation-only: clone parents
+        # mutation-only => clone parents
         return self._clone(p1), self._clone(p2)
 
     def _apply_one_mutation(self, child: Individual) -> Individual:
@@ -173,12 +175,11 @@ class EvolutionaryAlgorithm(EA):
         for idx in range(len(pop.individuals) - m, len(pop.individuals)):
             pop.individuals[idx] = Individual(number_of_nodes=n_nodes, tsp=self)  # random perm; fitness in ctor
 
-    ### public API ###
+    # public API 
 
     def solve(self, max_generations: int = 20000) -> Individual:
-        """
-        Runs Variant C and returns the best individual found.
-        """
+        # Runs Variant C and returns the best individual found.
+        
         pop = self.population  # Population object
         n = len(pop.individuals)
         instance_name = os.path.splitext(os.path.basename(self.filepath))[0]
@@ -205,7 +206,7 @@ class EvolutionaryAlgorithm(EA):
                 c2 = self._maybe_mutate(c2)
                 next_inds.extend([c1, c2])
 
-            # if odd top up using selection
+            # if population size is odd, top up using selection
             while len(next_inds) < n:
                 lone = self.selection(pop, 1).individuals[0]
                 clone = self._maybe_mutate(self._clone(lone))
@@ -229,20 +230,16 @@ class EvolutionaryAlgorithm(EA):
             pop.individuals = next_inds[:n]
             pop.population_size = n
 
-            # stats
+            # Record stats
             cur_best = min(pop.individuals, key=lambda ind: ind.fitness)
             best = cur_best if cur_best.fitness < best.fitness else best
 
             best_history.append(best.fitness)
             mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
 
-            # optional progress logging (keep commented to match trimmed output)
+            # optional progress logging
             # if gen in [2000, 5000, 10000, 20000]:
-            #     try:
-            #         print(f"{gen} mean: {best.fitness}")
-            #     except Exception:
-            #         pass
+            #     print(f"{gen} mean: {best.fitness}")
 
-        # logs
         self._log_arrays(instance_name, self.seed, best_history, mean_history)
         return best

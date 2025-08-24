@@ -91,12 +91,12 @@ class EvolutionaryAlgorithm(TSP):
         # Return K best individuals from the population
         return sorted(population.individuals, key=lambda ind: ind.fitness)[:max(0, k)]
 
-    def _select_parents(self, population: Population, n_pairs: int) -> List[Tuple[Individual, Individual]]:
+    def _select_parents(self, population: Population, needed_pairs: int) -> List[Tuple[Individual, Individual]]:
         # Selects parent pair to reproduce 
         if not self.selection:
             raise RuntimeError("No selection operator provided.")
         pairs: List[Tuple[Individual, Individual]] = []
-        for _ in range(n_pairs):
+        for _ in range(needed_pairs):
             parents = self.selection(population, 2)
             pairs.append((parents.individuals[0], parents.individuals[1]))
         return pairs
@@ -125,7 +125,7 @@ class EvolutionaryAlgorithm(TSP):
         return child1, child2
 
     def _maybe_mutate(self, child: Individual) -> Individual:
-        # Apply mutation to an individual based on mutation rate.
+        # Apply mutation to an individual based on mutation rate 
         if self.mutation is None or self.mutation_rate <= 0.0:
             return child
         if self.rng.random() < self.mutation_rate:
@@ -144,53 +144,56 @@ class EvolutionaryAlgorithm(TSP):
         self.file_writer(np.array(best_hist), f"{instance_name}_best_cost_per_generation.npy")
         self.file_writer(np.array(mean_hist), f"{instance_name}_mean_cost_per_generation.npy")
 
-    # --------- generic solve (variants may override if they need extras) ---------
 
     def solve(self, max_generations: int = 2000) -> Individual:
-        """
-        Generic G loop: elitism + (selection -> crossover -> mutation).
-        Variants override to insert extra steps (e.g. VariantC(Mutations Only) 
-        employs memetic polish, immigrants).
-        """
-        pop = self.population
-        n = len(pop.individuals)
+        # Run the ea for the specified number of generations and returns the best individual found.
+        
+        population = self.population
+        population_size = len(population.individuals)
         instance_name = os.path.splitext(os.path.basename(self.filepath))[0]
 
+        # Track the Evolution progress
         best_history: List[float] = []
         mean_history: List[float] = []
 
-        best = min(pop.individuals, key=lambda ind: ind.fitness)
+        # Initial Stats
+        best = min(population.individuals, key=lambda ind: ind.fitness)
         best_history.append(best.fitness)
-        mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
+        mean_history.append(sum(ind.fitness for ind in population.individuals) / population_size)
 
         for gen in range(int(max_generations)):
-            elites = self._elitism(pop, self.elitism_k)
+            elites = self._elitism(population, self.elitism_k)
 
-            n_pairs = (n - len(elites)) // 2
+            # Create New generations 
+            needed_pairs = (population_size - len(elites)) // 2
             next_inds: List[Individual] = elites.copy()
 
-            for (parent1, parent2) in self._select_parents(pop, n_pairs):
+            # Generate offspirngs from selected parents 
+            for (parent1, parent2) in self._select_parents(population, needed_pairs):
                 child1, child2 = self._maybe_crossover(parent1, parent2)
                 child1 = self._maybe_mutate(child1)
                 child2 = self._maybe_mutate(child2)
                 next_inds.extend([child1, child2])
 
-            # top-up if odd
-            while len(next_inds) < n:
-                lone = self.selection(pop, 1).individuals[0]
+            # Fill remaining spots if popultion size is an odd number 
+            while len(next_inds) < population_size:
+                lone = self.selection(population, 1).individuals[0]
                 clone = self._maybe_mutate(self._clone(lone))
                 next_inds.append(clone)
 
-            pop.individuals = next_inds[:n]
-            pop.population_size = n
+            population.individuals = next_inds[:population_size]
+            population.population_size = population_size
 
-            cur_best = min(pop.individuals, key=lambda ind: ind.fitness)
+            # Track best
+            cur_best = min(population.individuals, key=lambda ind: ind.fitness)
             if cur_best.fitness < best.fitness:
                 best = cur_best
-
+            
+            # Record Stats
             best_history.append(best.fitness)
-            mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
+            mean_history.append(sum(ind.fitness for ind in population.individuals) / population_size)
 
+            # Program updates at key Generation Milestones 
             if gen in [2000, 5000, 10000, 20000]:
                 try:
                     print(f"{gen} mean: {best.fitness}")
