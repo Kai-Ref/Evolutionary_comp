@@ -17,3 +17,9 @@ them efficiently. We theorize that this will happen with our second algorithm, w
 
 Variant C (mutations only) **Best
 --------------------------------------------------------------------------------------------------------------------
+The third genetic algorithm uses only mutation operators. In light of local search findings, we implement a mutation scheduling 
+that is size-aware favouring TwoOpt. Jump is utilised for smaller instances whereas for larger ones we increase the number of 
+exchange operations. The selection method uses minimization tournaments where elitism is incorporated to ensure no lost progress. 
+Immigrant injection and memetic polishing is added to ensure we do not get stuck in local optima. This EA, with elite selection, 
+selected TwoOpt, Jump Exchange operations enhances exploration allowing us to experiment global options and converge to a feasible 
+solution without sacrificing final tour performance. 
