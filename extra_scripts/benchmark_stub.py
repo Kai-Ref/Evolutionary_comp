@@ -162,7 +162,7 @@ def main():
     p.add_argument("--pop", type=int, default=50)
     p.add_argument("--gens", type=int, default=20000)
     p.add_argument("--runs", type=int, default=30)
-    p.add_argument("--seed_base", type=int, default=500)
+    p.add_argument("--seed_base", type=int, default=0)
     args = p.parse_args()
 
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

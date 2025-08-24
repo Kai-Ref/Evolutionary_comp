@@ -101,7 +101,7 @@ class EvolutionaryAlgorithm(EA):
         # logging
         # (handled by base class)
 
-        # initial population fitness computation test
+        # Calculate initial fitness values
         for ind in self.population.individuals:
             if ind.fitness is None:
                 ind.calculate_fitness()
