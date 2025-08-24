@@ -65,7 +65,9 @@ class Order(Crossover):
    
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:
-        #since order crossover keeps a section from it's parent, we need to recalculate all edges out of the kept segment.
+        """
+        Since Order crossover keeps a section from it's parent, we need to recalculate all edges out of the kept segment.
+        """
         tsp = individual.tsp
         old_tour = parent.permutation
         new_tour = individual.permutation

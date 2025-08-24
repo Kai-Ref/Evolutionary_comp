@@ -13,8 +13,9 @@ class EdgeRecombination(Crossover):
         """
         parent_size = len(parent1.permutation)
         child_tour = np.full(parent_size, np.inf)
+        #edge table is a graph representation of the edges
         edge_table = np.zeros((parent_size, parent_size), dtype=int)
-        #create edge table
+        #populate graph with edges
         for i in range(0, parent_size):
             edge_table[parent1.permutation[i]][parent1.permutation[i-1]] += 1
             edge_table[parent1.permutation[i]][parent1.permutation[(i+1)%parent_size]] += 1
@@ -65,6 +66,11 @@ class EdgeRecombination(Crossover):
 
     @override
     def efficient_fitness_calculation(self, individual: Individual) -> float:
+        """
+        Edge Recombination tends to create a completely new child compared to either of the parents.
+        Because the child and parent end up being different, 
+        it is easier to recompute all the edges in the child.
+        """
         tsp = individual.tsp
         new_tour = individual.permutation
         n = len(new_tour)

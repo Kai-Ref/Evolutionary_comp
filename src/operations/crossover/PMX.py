@@ -78,6 +78,10 @@ class PMX(Crossover):
 
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:
+        """
+        Partially Mixed shares the fitness calculation with Order, as it isn't guaranteed that anything towns
+        outside the selected range will be further copied over.
+        """
         tsp = individual.tsp
         old_tour = parent.permutation
         new_tour = individual.permutation

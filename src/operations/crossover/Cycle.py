@@ -67,6 +67,11 @@ class Cycle(Crossover):
 
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual) -> float:
+        """
+        Cycle crossover is highly dependent on the cycles of the parent (go figure...) If both parents
+        only have one cycle, then the children end up being the parents. To make it simple, we just
+        recalculate the fitness of the child if child doesn't match parent.
+        """
         if (individual == parent):
             return 0
         
