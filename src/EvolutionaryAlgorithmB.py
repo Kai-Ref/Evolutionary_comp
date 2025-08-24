@@ -1,4 +1,3 @@
-# src/EvolutionaryAlgorithmB.py
 from __future__ import annotations
 
 import numpy as np
@@ -75,7 +74,11 @@ class EvolutionaryAlgorithm(EA):
             if ind.fitness is None:
                 ind.calculate_fitness()
 
-    def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple[Individual, Individual]:
+    def _maybe_crossover(self, p1, p2):
+        if not isinstance(p1.permutation, np.ndarray):
+            p1.permutation = np.array(p1.permutation, dtype=int)
+        if not isinstance(p2.permutation, np.ndarray):
+            p2.permutation = np.array(p2.permutation, dtype=int)
         return super()._maybe_crossover(p1, p2)
 
     ### public API ###
