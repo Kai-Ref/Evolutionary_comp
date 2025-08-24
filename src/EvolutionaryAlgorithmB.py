@@ -5,7 +5,7 @@ import numpy as np
 import random
 from typing import Optional
 
-from src.EA import EvolutionaryAlgorithm as EA
+from src.EvolutionaryAlgorithm import EvolutionaryAlgorithm as EA
 from src.Population import Population
 from src.Individual import Individual
 
