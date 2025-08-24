@@ -1,7 +1,7 @@
 Group Members:
 Reffert, Kai (1989953)
 Sharada, Bangamuarachchi (a1874722)
-Csizmadia, Gabriel
+Csizmadia, Gabriel (a1852152)
 Glastonbury, Dylan
 Gern, Marcel (1991159)
 , Raiyan
@@ -39,3 +39,8 @@ Sharada:
         - Added seeding for reproducibility and logging of per-generation results.
         - Developed benchmarking and validation scripts (quick_validate.py, benchmark_stub.py).
         - Performed validation runs on TSPlib instance eil51 and generated results for handover.
+
+Gabriel:
+- Worked on Task 5
+    - Task 5:
+        - Implemented selection operators: (Elitism, FitnessBased and Tournament) in main branch.
