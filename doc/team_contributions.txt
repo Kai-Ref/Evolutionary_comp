@@ -4,9 +4,13 @@ Sharada, Bangamuarachchi (a1874722)
 Csizmadia, Gabriel (a1852152)
 Glastonbury, Dylan
 Gern, Marcel (1991159)
+<<<<<<< HEAD
 , Raiyan
 
 
+=======
+Rahman, Md Raiyan (a1872756)
+>>>>>>> origin/EAVariantC(Mutations)
 
 Contributions:
 
@@ -41,6 +45,23 @@ Sharada:
         - Performed validation runs on TSPlib instance eil51 and generated results for handover.
 
 Gabriel:
+<<<<<<< HEAD
 - Worked on Task 5
     - Task 5:
         - Implemented selection operators: (Elitism, FitnessBased and Tournament) in main branch.
+=======
+- Wrote readme.txt
+- Worked on Task 5
+    - Task 5:
+        - Implemented selection operators: (Elitism, FitnessBased and Tournament) in main branch.
+
+
+Raiyan:
+- Worked on Task 6
+    - Task 6: 
+        - Implemented the EvolutionaryAlgorithm base class and EA Variant C.
+        - Ran benchmarking tests for variant C to ensure it performed better than Local search.
+        - Ran benchmarking tests for all the Variants and analyzed the results. 
+        - Implemented benchmark_stub.py to test the best EA Variant.
+        - Ran tests for the best EA variant and stored the results in results/your_EA.txt.
+>>>>>>> origin/EAVariantC(Mutations)

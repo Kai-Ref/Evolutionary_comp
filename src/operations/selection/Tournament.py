@@ -9,7 +9,7 @@ class Tournament(Selection):
     def __call__(self, population: Population, num_to_select: int) -> Population:
         # Create a new population for the selected individuals
         new_population = Population(population_size=num_to_select,
-                                    number_of_nodes=population.individuals[0].permutation.size)
+                                    number_of_nodes=len(population.individuals[0].permutation), tsp=population.individuals[0].tsp)
 
         # Repeat the tournament to select the number of individuals
         for _ in range(num_to_select):

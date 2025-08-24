@@ -4,11 +4,13 @@ from typing import override
 import numpy as np
 
 class PMX(Crossover):
-    #Partially Mixed Crossover is similar to Order crossover in that it tries to keeps an arbitary portion
-    #from the parents but if the parents share values in the slice, PMX includes additional values, then
-    #copies the rest from the other parent.
     @override
-    def xover(self, parent1: Individual, parent2: Individual) -> list:
+    def xover(self, parent1: Individual, parent2: Individual) -> tuple:
+        """
+        Partially Mixed Crossover is similar to Order crossover in that it tries to keeps an arbitary portion
+        from the parents but if the parents share values in the slice, PMX includes additional values, then
+        copies the rest from the other parent.
+        """
         added_to_child1 = []
         added_to_child2 = []
         parent_size = len(parent1.permutation)
@@ -62,19 +64,24 @@ class PMX(Crossover):
             if child2_tour[r] == np.inf:
                 child2_tour[r] = parent1.permutation[r]
 
+        #finalise children
         child1 = Individual(parent_size, parent1.tsp)
         child1.permutation = child1_tour.tolist()
         child1.fitness += self.efficient_fitness_calculation(child1, parent1, keep_start, keep_end)
 
         child2 = Individual(parent_size, parent2.tsp)
-        child2.permutation = child1_tour.tolist()
+        child2.permutation = child2_tour.astype(int).tolist()
         child2.fitness += self.efficient_fitness_calculation(child2, parent2, keep_start, keep_end)        
 
-        return list(child1, child2)
+        return (child1, child2)
 
 
     @override
     def efficient_fitness_calculation(self, individual: Individual, parent: Individual, i: int, j:int) -> float:
+        """
+        Partially Mixed shares the fitness calculation with Order, as it isn't guaranteed that anything towns
+        outside the selected range will be further copied over.
+        """
         tsp = individual.tsp
         old_tour = parent.permutation
         new_tour = individual.permutation

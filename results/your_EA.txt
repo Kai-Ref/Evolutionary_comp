@@ -1,0 +1,11 @@
+EA-C (best):
+instance=eil51, selection=default, pop=50, gens=20000, runs=30, mean=437.644, std=5.296
+instance=eil76, selection=default, pop=50, gens=20000, runs=30, mean=567.959, std=6.228
+instance=eil101, selection=default, pop=50, gens=20000, runs=30, mean=672.319, std=7.636
+instance=st70, selection=default, pop=50, gens=20000, runs=30, mean=697.356, std=11.655
+instance=kroA100, selection=default, pop=50, gens=20000, runs=30, mean=22342.549, std=611.697
+instance=kroC100, selection=default, pop=50, gens=20000, runs=30, mean=21817.488, std=417.033
+instance=kroD100, selection=default, pop=50, gens=20000, runs=30, mean=22390.889, std=496.700
+instance=lin105, selection=default, pop=50, gens=20000, runs=30, mean=15071.685, std=351.432
+instance=pcb442, selection=default, pop=50, gens=20000, runs=30, mean=59279.308, std=790.285
+instance=pr2392, selection=default, pop=50, gens=20000, runs=30, mean=1628175.105, std=23139.271

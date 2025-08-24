@@ -1,24 +1,36 @@
-from src.TSP import TSP
-from src.Population import Population
-from src.Individual import Individual
-from src.FileWriter import FileWriter
+from __future__ import annotations
 
-from src.operations.selection.Tournament import Tournament
-from src.operations.selection.FitnessBased import FitnessBased
-from src.operations.crossover.Order import Order
-from src.operations.mutation.Exchange import Exchange
-
-import numpy as np
 import random
-import os
 from typing import Optional
 
+import numpy as np
 
-class EvolutionaryAlgorithm(TSP):
+from src.EvolutionaryAlgorithm import EvolutionaryAlgorithm as EA
+from src.operations.selection.Tournament import Tournament
+from src.operations.crossover.Order import Order
+from src.operations.mutation.Exchange import Exchange
+from src.Population import Population
 
+class _MinTournament:
+    def __init__(self, k: int = 3, rng: random.Random | None = None):
+        self.k = k
+        self.rng = rng or random.Random()
+
+    def __call__(self, population: Population, num_to_select: int) -> Population:
+        n_nodes = len(population.individuals[0].permutation)
+        tsp = population.individuals[0].tsp
+        winners = Population(population_size=num_to_select, number_of_nodes=n_nodes, tsp=tsp)
+
+        inds = population.individuals
+        k = min(self.k, len(inds))
+        for _ in range(num_to_select):
+            competitors = self.rng.sample(inds, k)
+            winners.individuals.append(min(competitors, key=lambda ind: ind.fitness))  # MIN
+        return winners
+
+class EvolutionaryAlgorithm(EA):
     ### Variant A: Generational GA with elitism, configurable parent selection
     ### OX crossover, and swap mutation
-
 
     def __init__(
         self,
@@ -37,24 +49,34 @@ class EvolutionaryAlgorithm(TSP):
         seed: Optional[int] = None,
         log_dir: str = "results/ea_variant_a",
     ):
+        # Prepare a local RNG so we can seed Order() before base init
+        rng_local = random.Random(seed)
+
         # base problem
         super().__init__(
             filepath=filepath,
             distance_metric=distance_metric,
             precompute_distances=precompute_distances,
             population_size=population_size,
-            mutation=None, 
+            selection=None,  # set after super() so self.population exists
+            crossover=crossover or Order(rng=rng_local),
+            mutation=mutation or Exchange(),
+            crossover_rate=crossover_rate,
+            mutation_rate=mutation_rate,
+            elitism_k=elitism_k,
+            seed=seed,
+            log_dir=log_dir,
         )
 
         # RNG
         self.seed = seed
-        self.rng = random.Random(seed)
+        self.rng = rng_local
         np.random.seed(seed if seed is not None else None)
 
         # operators
-        self.selection = selection or Tournament(k=3, rng=self.rng)
-        self.crossover = crossover or Order(rng=self.rng)
-        self.mutation = mutation or Exchange()
+        self.selection = selection or _MinTournament(k=3, rng=self.rng)
+        self.crossover = self._crossover_ops[0] if self._crossover_ops else (crossover or Order(rng=self.rng))
+        self.mutation = self.mutation or Exchange()
 
         # hyperparams
         self.crossover_rate = float(crossover_rate)
@@ -62,52 +84,41 @@ class EvolutionaryAlgorithm(TSP):
         self.elitism_k = int(elitism_k)
 
         # logging
-        self.file_writer = FileWriter()
-        self.log_dir_base = log_dir
+        # (Handled by the base EA; keeping section name for consistency)
 
         # initial population fitness computation test
         for ind in self.population.individuals:
             if ind.fitness is None:
                 ind.calculate_fitness()
 
+    def _elitism(self, pop: Population, k: int) -> list:
+        # delegate to base but keep the same function name/signature
+        return super()._elitism(pop, k)
 
-    def _elitism(self, pop: Population, k: int) -> list[Individual]:
-        return sorted(pop.individuals, key=lambda ind: ind.fitness)[:max(0, k)]
-
-    def _select_parents(self, pop: Population, n_pairs: int) -> list[tuple[Individual, Individual]]:
+    def _select_parents(self, pop: Population, n_pairs: int) -> list:
+        #returns list[tuple[Individual, Individual]]
         #pick 2 per pair (with replacement)
-        pairs = []
-        for _ in range(n_pairs):
-            sel = self.selection(pop, 2)
-            p1, p2 = sel.individuals[0], sel.individuals[1]
-            pairs.append((p1, p2))
-        return pairs
+        return super()._select_parents(pop, n_pairs)
 
-    def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple[Individual, Individual]:
-        if self.rng.random() < self.crossover_rate:
+    def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple:
+        #returns tuple[Individual, Individual]
+        if self.rng.random() < self.crossover_rate and self.crossover is not None:
             return self.crossover.xover(p1, p2)
         # clone parents
-        c1 = Individual(number_of_nodes=None, tsp=p1.tsp, permutation=p1.permutation.copy())
-        c1.fitness = p1.fitness
-        c2 = Individual(number_of_nodes=None, tsp=p2.tsp, permutation=p2.permutation.copy())
-        c2.fitness = p2.fitness
-        return c1, c2
+        c1 = self._clone(p1)
+        c2 = self._clone(p2)
+        return (c1, c2)
 
     def _maybe_mutate(self, child: Individual) -> Individual:
-        if self.rng.random() < self.mutation_rate:
+        if self.rng.random() < self.mutation_rate and self.mutation is not None:
             n = len(child.permutation)
             i, j = self.rng.sample(range(n), 2)
             child = self.mutation.mutate_individual(child, i, j, update_fitness=True)
         return child
 
     def _log_arrays(self, instance_name: str, seed: Optional[int], best_hist: list[float], mean_hist: list[float]):
-        seed_folder = f"seed_{seed}" if seed is not None else "seed_none"
-        folder = os.path.join(self.log_dir_base, instance_name, seed_folder)
-        os.makedirs(folder, exist_ok=True)
-
-        self.file_writer.file_path = folder
-        self.file_writer(np.array(best_hist), "best_cost_per_generation.npy")
-        self.file_writer(np.array(mean_hist), "mean_cost_per_generation.npy")
+        # delegate to base to actually write files
+        return super()._log_arrays(instance_name, seed, best_hist, mean_hist)
 
     ### public API ###
 
@@ -115,52 +126,5 @@ class EvolutionaryAlgorithm(TSP):
         """
         Runs Variant A and returns the best individual found.
         """
-        pop = self.population  # Population object
-        n = len(pop.individuals)
-        instance_name = os.path.splitext(os.path.basename(self.filepath))[0]
-
-        best_history = []
-        mean_history = []
-
-        # initial stats
-        best = min(pop.individuals, key=lambda ind: ind.fitness)
-        best_history.append(best.fitness)
-        mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
-
-        # generational loop
-        for _ in range(int(max_generations)):
-            elites = self._elitism(pop, self.elitism_k)
-
-            # creating children
-            n_pairs = (n - len(elites)) // 2
-            next_inds: list[Individual] = elites.copy()
-
-            for (p1, p2) in self._select_parents(pop, n_pairs):
-                c1, c2 = self._maybe_crossover(p1, p2)
-                c1 = self._maybe_mutate(c1)
-                c2 = self._maybe_mutate(c2)
-                next_inds.extend([c1, c2])
-
-            # if odd top up using selection
-            while len(next_inds) < n:
-                sel = self.selection(pop, 1)
-                lone = sel.individuals[0]
-                clone = Individual(number_of_nodes=None, tsp=lone.tsp, permutation=lone.permutation.copy())
-                clone.fitness = lone.fitness
-                clone = self._maybe_mutate(clone)
-                next_inds.append(clone)
-
-            # swap populations
-            pop.individuals = next_inds[:n]
-            pop.population_size = n
-
-            # stats
-            cur_best = min(pop.individuals, key=lambda ind: ind.fitness)
-            best = cur_best if cur_best.fitness < best.fitness else best
-
-            best_history.append(best.fitness)
-            mean_history.append(sum(ind.fitness for ind in pop.individuals) / n)
-
-        # logs
-        self._log_arrays(instance_name, self.seed, best_history, mean_history)
-        return best
+        # Use the generic EA loop (elitism -> selection -> crossover -> mutation)
+        return super().solve(max_generations=max_generations)
