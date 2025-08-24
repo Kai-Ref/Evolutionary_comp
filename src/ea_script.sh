@@ -13,7 +13,7 @@ SEEDS="${SEEDS:-10}"
 GENS="${GENS:-20000}"
 LOGDIR="${LOGDIR:-results/ea_variant_c}"
 POPS="${POPS:-20 50 100 200}"
-INSTANCES="${INSTANCES:-eil51 eil76 eil101 st70 kroA100 kroC100 kroD100 lin105 pcb442 pr2392 usa13509}"
+INSTANCES="${INSTANCES:-eil51 eil76 eil101 st70 kroA100 kroC100 kroD100 lin105}"
 
 EVAL_SCRIPT="${EVAL_SCRIPT:-evaluation.py}"
 EVAL_OUT="${EVAL_OUT:-results/EA_mutation_results_two.txt}"
