@@ -37,20 +37,21 @@ class EvolutionaryAlgorithm(EA):
     ):
         # base problem
         super().__init__(
-            filepath=filepath,
-            distance_metric=distance_metric,
-            precompute_distances=precompute_distances,
-            population_size=population_size,
-            # let this variant set its own selection and crossover attributes below
-            selection=None,
-            crossover=None,
-            mutation=None,  # no mutation in Variant B
-            crossover_rate=crossover_rate,
-            mutation_rate=0.0,
-            elitism_k=elitism_k,
-            seed=seed,
-            log_dir=log_dir,
+        filepath=filepath,
+        population_size=population_size,
+        distance_metric=distance_metric,
+        precompute_distances=precompute_distances,
+        selection=None,  # set after super()
+        crossover=(crossover1 or PMX(), crossover2 or Cycle()),  # tuple -> base handles choice
+        mutation=None,                       # B is crossover-only
+        crossover_rate=crossover_rate,
+        mutation_rate=0.0,
+        elitism_k=elitism_k,
+        seed=seed,
+        log_dir=log_dir,
         )
+        self.selection = selection or FitnessBased()
+
 
         # RNG
         self.seed = seed
@@ -75,17 +76,7 @@ class EvolutionaryAlgorithm(EA):
                 ind.calculate_fitness()
 
     def _maybe_crossover(self, p1: Individual, p2: Individual) -> tuple[Individual, Individual]:
-        #returns tuple[Individual, Individual]
-        if self.rng.random() < self.crossover_rate:
-            if self.rng.random() < 0.5:
-                return self.crossover1.xover(p1, p2)
-            else:
-                return self.crossover2.xover(p1, p2)
-
-        # clone parents
-        c1 = self._clone(p1)
-        c2 = self._clone(p2)
-        return (c1, c2)
+        return super()._maybe_crossover(p1, p2)
 
     ### public API ###
     def solve(self, max_generations: int = 2000) -> Individual:

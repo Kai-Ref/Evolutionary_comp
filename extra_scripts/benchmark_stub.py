@@ -1,30 +1,27 @@
+# top: already there
 import sys, os, argparse, random, numpy as np, statistics as stats
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.EvolutionaryAlgorithmA import EvolutionaryAlgorithm
-from src.EvolutionaryAlgorithmB import EvolutionaryAlgorithm as EvolutionaryAlgorithmB
-from src.EvolutionaryAlgorithmC import EvolutionaryAlgorithm as EvolutionaryAlgorithmC
-
-from src.operations.selection.Tournament import Tournament
-from src.operations.selection.FitnessBased import FitnessBased
-from src.operations.crossover.Order import Order
-from src.operations.mutation.Exchange import Exchange
+# ... your imports for A/B/C + ops ...
 
 def run_once(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
-    # allow default: let the variant choose its own selector
+    # Let Variant A use its internal default when selection_kind == "default"
     if selection_kind == "default":
         selection = None
-    else:
-        selection = Tournament() if selection_kind == "tournament" else FitnessBased()
+    elif selection_kind == "tournament":
+        # Your repo Tournament is maximization-based; better to use A's default
+        selection = None
+    else:  # "fitness"
+        selection = FitnessBased()
     ea = EvolutionaryAlgorithm(
         filepath=file_path,
         population_size=pop,
         precompute_distances=True,
-        selection=selection,        # None -> Variant A defaults to Tournament(k=3)
-        crossover=Order(),          # same as A's default
-        mutation=Exchange(),        # same as A's default
+        selection=selection,
+        crossover=Order(),
+        mutation=Exchange(),
         crossover_rate=0.9,
         mutation_rate=0.2,
         elitism_k=2,
@@ -37,16 +34,13 @@ def run_once(file_path, seed, selection_kind, pop, gens):
 def run_once_b(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
-    if selection_kind == "default":
-        selection = None            # Variant B defaults to FitnessBased(self.population, 3)
-    else:
-        selection = FitnessBased() if selection_kind == "fitness" else Tournament()
+    # Variant B default = FitnessBased; use None to let the variant set it
+    selection = None if selection_kind == "default" else FitnessBased()
     ea = EvolutionaryAlgorithmB(
         filepath=file_path,
         population_size=pop,
         precompute_distances=True,
         selection=selection,
-        # Variant B uses internal PMX/Cycle crossover, no mutation
         crossover_rate=0.65,
         elitism_k=2,
         seed=seed,
@@ -58,17 +52,13 @@ def run_once_b(file_path, seed, selection_kind, pop, gens):
 def run_once_c(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
-    # Variant C default is MinTournament(k=3); allow override to FitnessBased if asked
-    if selection_kind == "default":
-        selection = None
-    else:
-        selection = FitnessBased() if selection_kind == "fitness" else None
+    # Variant C default = MinTournament; use None to let the variant set it
+    selection = None if selection_kind == "default" else FitnessBased()
     ea = EvolutionaryAlgorithmC(
         filepath=file_path,
         population_size=pop,
         precompute_distances=True,
         selection=selection,
-        # mutation-only defaults; keep explicit for clarity
         mutation_rate=1.0,
         elitism_k=2,
         seed=seed,
@@ -79,16 +69,21 @@ def run_once_c(file_path, seed, selection_kind, pop, gens):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--instances", nargs="+", default=["datasets/eil51.tsp", "datasets/eil76.tsp", "datasets/lin105.tsp"])
+    p.add_argument("--instances", nargs="+", default=[
+        "datasets/eil51.tsp", "datasets/eil76.tsp", "datasets/lin105.tsp"
+    ])
     p.add_argument("--selection", choices=["default", "tournament", "fitness"], default="default")
     p.add_argument("--pop", type=int, default=50)
     p.add_argument("--gens", type=int, default=20000)
-    p.add_argument("--runs", type=int, default=2)
+    p.add_argument("--runs", type=int, default=3)
     p.add_argument("--seed_base", type=int, default=500)
     args = p.parse_args()
 
-    os.makedirs("results", exist_ok=True)
-    out_path = "results/your_EA.txt"
+    # Anchor results path to repo root and flush after writes
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.makedirs(os.path.join(repo_root, "results"), exist_ok=True)
+    out_path = os.path.join(repo_root, "results", "your_EA.txt")
+    print(f"[benchmark] writing to {out_path}")
 
     # EA-A
     print("EA-A:")
@@ -99,16 +94,12 @@ def main():
             cost = run_once(inst, seed, args.selection, args.pop, args.gens)
             print(f"{os.path.basename(inst)} run {r+1}/{args.runs} seed {seed}: best={cost:.3f}")
             costs.append(cost)
-
-        mean = stats.mean(costs)
-        std = stats.pstdev(costs)
-        line = (
-            f"instance={os.path.basename(inst).split('.')[0]}, "
-            f"selection={args.selection}, pop={args.pop}, gens={args.gens}, "
-            f"runs={args.runs}, mean={mean:.3f}, std={std:.3f}\n"
-        )
+        mean = stats.mean(costs); std = stats.pstdev(costs)
+        line = (f"instance={os.path.basename(inst).split('.')[0]}, "
+                f"selection={args.selection}, pop={args.pop}, gens={args.gens}, "
+                f"runs={args.runs}, mean={mean:.3f}, std={std:.3f}\n")
         with open(out_path, "a") as f:
-            f.write(line)
+            f.write(line); f.flush(); os.fsync(f.fileno())
         print("Wrote:", line.strip())
 
     # EA-B
@@ -120,16 +111,12 @@ def main():
             cost = run_once_b(inst, seed, args.selection, args.pop, args.gens)
             print(f"{os.path.basename(inst)} run {r+1}/{args.runs} seed {seed}: best={cost:.3f}")
             costs.append(cost)
-
-        mean = stats.mean(costs)
-        std = stats.pstdev(costs)
-        line = (
-            f"instance={os.path.basename(inst).split('.')[0]}, "
-            f"selection={args.selection}, pop={args.pop}, gens={args.gens}, "
-            f"runs={args.runs}, mean={mean:.3f}, std={std:.3f}\n"
-        )
+        mean = stats.mean(costs); std = stats.pstdev(costs)
+        line = (f"instance={os.path.basename(inst).split('.')[0]}, "
+                f"selection={args.selection}, pop={args.pop}, gens={args.gens}, "
+                f"runs={args.runs}, mean={mean:.3f}, std={std:.3f}\n")
         with open(out_path, "a") as f:
-            f.write(line)
+            f.write(line); f.flush(); os.fsync(f.fileno())
         print("Wrote:", line.strip())
 
     # EA-C
@@ -141,16 +128,13 @@ def main():
             cost = run_once_c(inst, seed, args.selection, args.pop, args.gens)
             print(f"{os.path.basename(inst)} run {r+1}/{args.runs} seed {seed}: best={cost:.3f}")
             costs.append(cost)
-
-        mean = stats.mean(costs)
-        std = stats.pstdev(costs)
-        line = (
-            f"instance={os.path.basename(inst).split('.')[0]}, "
-            f"selection={args.selection}, pop={args.pop}, gens={args.gens}, runs={args.runs}, "
-            f"mean={mean:.3f}, std={std:.3f}\n"
-        )
+        mean = stats.mean(costs); std = stats.pstdev(costs)
+        line = (f"instance={os.path.basename(inst).split('.')[0]}, "
+                f"selection={args.selection if args.selection=='fitness' else 'default'}, "
+                f"pop={args.pop}, gens={args.gens}, runs={args.runs}, "
+                f"mean={mean:.3f}, std={std:.3f}\n")
         with open(out_path, "a") as f:
-            f.write(line)
+            f.write(line); f.flush(); os.fsync(f.fileno())
         print("Wrote:", line.strip())
 
 if __name__ == "__main__":
