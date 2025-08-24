@@ -11,6 +11,22 @@ from src.operations.selection.Tournament import Tournament
 from src.operations.crossover.Order import Order
 from src.operations.mutation.Exchange import Exchange
 
+class _MinTournament:
+    def __init__(self, k: int = 3, rng: random.Random | None = None):
+        self.k = k
+        self.rng = rng or random.Random()
+
+    def __call__(self, population: Population, num_to_select: int) -> Population:
+        n_nodes = len(population.individuals[0].permutation)
+        tsp = population.individuals[0].tsp
+        winners = Population(population_size=num_to_select, number_of_nodes=n_nodes, tsp=tsp)
+
+        inds = population.individuals
+        k = min(self.k, len(inds))
+        for _ in range(num_to_select):
+            competitors = self.rng.sample(inds, k)
+            winners.individuals.append(min(competitors, key=lambda ind: ind.fitness))  # MIN
+        return winners
 
 class EvolutionaryAlgorithm(EA):
     ### Variant A: Generational GA with elitism, configurable parent selection
