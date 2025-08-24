@@ -103,8 +103,8 @@ class EvolutionaryAlgorithm(TSP):
 
     def _clone(self, individual: Individual) -> Individual:
         clone = Individual(
-            number_of_nodes=None
-            tsp=individual.tsp
+            number_of_nodes=None,
+            tsp=individual.tsp, 
             permutation=individual.permutation.copy()
             )
         clone.fitness = individual.fitness
