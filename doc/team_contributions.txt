@@ -28,3 +28,14 @@ Marcel:
         - Implemented jump mutation operation.
         - Implemented the LocalSearch class and its functionality. 
     - Task 3: Implemented the Individual and Population classes.
+
+Sharada:
+- Worked on Task 5 and 6 (Selection + Evolutionary Algorithm):
+    - Task 5:
+        - Implemented parent selection operators (Tournament and Fitness-Proportional).
+    - Task 6:
+        - Implemented the EvolutionaryAlgorithm class and Variant A.
+        - Integrated Order Crossover (OX) and Exchange (swap) mutation operators.
+        - Added seeding for reproducibility and logging of per-generation results.
+        - Developed benchmarking and validation scripts (quick_validate.py, benchmark_stub.py).
+        - Performed validation runs on TSPlib instance eil51 and generated results for handover.
