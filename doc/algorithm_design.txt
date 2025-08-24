@@ -1,4 +1,7 @@
+The first genetic algorithm(Variant A) uses a generational GA with elitism (keep top-2). Parents are chosen via k-way tournament (k=3). Variation combines Order Crossover (OX, p=0.9) and Exchange/Swap mutation (p≈0.2). Distances are precomputed; runs are seeded and logged.
+This design aims to balance exploitation and diversity: tournament keeps pressure on good tours, while swap mutation breaks plateaus and repairs building blocks. We expect slightly slower early convergence but expectional final solution quality and stability across instances/seeds, with low risk of premature local trapping.
 
 The second genetic algorithm has been designed to use two crossover operators and no mutation operators. The selection method used for this evolutionary algorithm will be a fitness-proportional method. 
 Compared to the more all-around first algorithm, the second algorithm should rapidly converge to a local optimum as crossover operations are good at exploring the search space. 
 The biggest issue with crossover is that they tend to get stuck in local optima and are unable to escape them efficiently. We theorize that this will happen with our second algorithm, where it will converge locally but not globally.
+
