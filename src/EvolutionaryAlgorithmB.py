@@ -58,7 +58,7 @@ class EvolutionaryAlgorithm(EA):
         np.random.seed(seed if seed is not None else None)
 
         # operators
-        self.selection  = selection  or FitnessBased(self.population, 3)
+        self.selection  = selection  or FitnessBased()
         self.crossover1 = crossover1 or PMX()
         self.crossover2 = crossover2 or Cycle()
 

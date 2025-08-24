@@ -10,6 +10,7 @@ from src.EvolutionaryAlgorithm import EvolutionaryAlgorithm as EA
 from src.operations.selection.Tournament import Tournament
 from src.operations.crossover.Order import Order
 from src.operations.mutation.Exchange import Exchange
+from src.Population import Population
 
 class _MinTournament:
     def __init__(self, k: int = 3, rng: random.Random | None = None):
