@@ -1,113 +1,63 @@
 import sys, os, argparse, random, numpy as np, statistics as stats
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.EvolutionaryAlgorithmA import EvolutionaryAlgorithm as EvolutionaryAlgorithmA
-from src.EvolutionaryAlgorithmB import EvolutionaryAlgorithm as EvolutionaryAlgorithmB
 from src.EvolutionaryAlgorithmC import EvolutionaryAlgorithm as EvolutionaryAlgorithmC
-
-from src.operations.selection.Tournament import Tournament
 from src.operations.selection.FitnessBased import FitnessBased
-from src.operations.crossover.Order import Order
-from src.operations.mutation.Exchange import Exchange
+# from src.EvolutionaryAlgorithmA import EvolutionaryAlgorithm as EvolutionaryAlgorithmA
+# from src.EvolutionaryAlgorithmB import EvolutionaryAlgorithm as EvolutionaryAlgorithmB
+# from src.operations.selection.Tournament import Tournament
+# from src.operations.crossover.Order import Order
+# from src.operations.mutation.Exchange import Exchange
 
-'''
-def run_once(file_path, seed, selection_kind, pop, gens):
-    rng = random.Random(seed)
-    np.random.seed(seed)
 
-    # --- Skip recomputation if we already have full curves for this (instance, seed) ---
-    instance_name = os.path.splitext(os.path.basename(file_path))[0]
-    cache_dir = os.path.join("results", "ea_variant_a", instance_name, f"seed_{seed}")
-    best_path = os.path.join(cache_dir, f"{instance_name}_best_cost_per_generation.npy")
-    # NOTE: we only need the best curve for the benchmark; mean curve is already present too.
-    if os.path.exists(best_path):
-        try:
-            arr = np.load(best_path)
-            if len(arr) >= gens + 1:
-                cached = float(arr[min(gens, len(arr) - 1)])
-                print(f"[cache] A {instance_name} seed {seed}: best={cached:.3f}")
-                return cached
-        except Exception:
-            pass
-    # -------------------------------------------------------------------------------
+# ---------- cache helpers (handles both old and new folder/file layouts) ----------
+def _candidate_best_paths(results_root: str, instance_name: str, pop: int, seed: int):
+    """
+    Return the possible .npy locations in priority order.
+    Old layout:  results/ea_variant_c/<inst>/pop_<pop>/seed_<seed>/(best_cost_per_generation.npy or <inst>_best...)
+    New layout:  results/ea_variant_c/<inst>/seed_<seed>/(best_cost_per_generation.npy or <inst>_best...)
+    """
+    base = os.path.join(results_root, "ea_variant_c", instance_name)
+    paths = [
+        # old layout (with pop_<pop>)
+        os.path.join(base, f"pop_{pop}", f"seed_{seed}", f"{instance_name}_best_cost_per_generation.npy"),
+        os.path.join(base, f"pop_{pop}", f"seed_{seed}", "best_cost_per_generation.npy"),
+        # new layout (no pop folder)
+        os.path.join(base, f"seed_{seed}", f"{instance_name}_best_cost_per_generation.npy"),
+        os.path.join(base, f"seed_{seed}", "best_cost_per_generation.npy"),
+    ]
+    return paths
 
-    # let Variant A use its internal default when selection_kind == "default"
-    if selection_kind == "default":
-        selection = None
-    elif selection_kind == "tournament":
-        selection = Tournament()
-    else:  # "fitness"
-        selection = FitnessBased()
-    ea = EvolutionaryAlgorithmA(
-        filepath=file_path,
-        population_size=pop,
-        precompute_distances=True,
-        selection=selection,
-        crossover=Order(),
-        mutation=Exchange(),
-        crossover_rate=0.9,
-        mutation_rate=0.2,
-        elitism_k=2,
-        seed=seed,
-        log_dir="results/ea_variant_a"
-    )
-    best = ea.solve(max_generations=gens)
-    return best.fitness
 
-def run_once_b(file_path, seed, selection_kind, pop, gens):
-    rng = random.Random(seed)
-    np.random.seed(seed)
+def _load_cached_best(results_root: str, instance_name: str, pop: int, seed: int, gens: int):
+    """
+    Try all candidate paths. If any has >= gens+1 entries, return the last entry (float).
+    """
+    for p in _candidate_best_paths(results_root, instance_name, pop, seed):
+        if os.path.exists(p):
+            try:
+                arr = np.load(p)
+                if len(arr) >= gens + 1:
+                    return float(arr[gens])
+            except Exception:
+                pass
+    return None
 
-    # --- Skip recomputation if we already have full curves for this (instance, seed) ---
-    instance_name = os.path.splitext(os.path.basename(file_path))[0]
-    cache_dir = os.path.join("results", "ea_variant_b", instance_name, f"seed_{seed}")
-    best_path = os.path.join(cache_dir, f"{instance_name}_best_cost_per_generation.npy")
-    if os.path.exists(best_path):
-        try:
-            arr = np.load(best_path)
-            if len(arr) >= gens + 1:
-                cached = float(arr[min(gens, len(arr) - 1)])
-                print(f"[cache] B {instance_name} seed {seed}: best={cached:.3f}")
-                return cached
-        except Exception:
-            pass
-    # -------------------------------------------------------------------------------
 
-    # Variant B default = FitnessBased (set selection=None to use variant default)
-    selection = None if selection_kind == "default" else (FitnessBased() if selection_kind == "fitness" else Tournament())
-    ea = EvolutionaryAlgorithmB(
-        filepath=file_path,
-        population_size=pop,
-        precompute_distances=True,
-        selection=selection,
-        # PMX/Cycle and mutation=None are handled inside the variant
-        crossover_rate=0.65,
-        elitism_k=2,
-        seed=seed,
-        log_dir="results/ea_variant_b"
-    )
-    best = ea.solve(max_generations=gens)
-    return best.fitness
-'''
-
+# --------------------------------- Variant C ---------------------------------
 def run_once_c(file_path, seed, selection_kind, pop, gens):
     rng = random.Random(seed)
     np.random.seed(seed)
 
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    results_root = os.path.join(repo_root, "results")
+
     # --- Skip recomputation if we already have full curves for this (instance, seed) ---
-    #     If the cached best-cost curve reaches `gens`, read its last entry instead of rerunning.
     instance_name = os.path.splitext(os.path.basename(file_path))[0]
-    cache_dir = os.path.join("results", "ea_variant_c", instance_name, f"seed_{seed}")
-    best_path = os.path.join(cache_dir, f"{instance_name}_best_cost_per_generation.npy")
-    if os.path.exists(best_path):
-        try:
-            arr = np.load(best_path)
-            if len(arr) >= gens + 1:
-                cached = float(arr[min(gens, len(arr) - 1)])
-                print(f"[cache] C {instance_name} seed {seed}: best={cached:.3f}")
-                return cached
-        except Exception:
-            pass
+    cached = _load_cached_best(results_root, instance_name, pop, seed, gens)
+    if cached is not None:
+        print(f"[cache] C {instance_name} seed {seed}: best={cached:.3f}")
+        return cached
     # -------------------------------------------------------------------------------
 
     # Variant C default = MinTournament (inside C). If you pass "fitness", use FitnessBased instead.
@@ -127,19 +77,14 @@ def run_once_c(file_path, seed, selection_kind, pop, gens):
     return best.fitness
 
 
-# ---------------------------------------
-# Commented-out A/B helpers (not needed)
-# ---------------------------------------
-# def run_once(...):
-#     pass
-#
-# def run_once_b(...):
-#     pass
+# --------------------------------------- A/B kept here for reference ---------------------------------------
+# def run_once(...): pass
+# def run_once_b(...): pass
 
 
 def main():
     p = argparse.ArgumentParser()
-    # Full TSPlib list from your spec
+    # Full TSPlib list; change if you only want a subset
     p.add_argument(
         "--instances",
         nargs="+",
@@ -161,8 +106,8 @@ def main():
     p.add_argument("--selection", choices=["default", "fitness"], default="default")
     p.add_argument("--pop", type=int, default=50)
     p.add_argument("--gens", type=int, default=20000)
-    p.add_argument("--runs", type=int, default=30)
-    p.add_argument("--seed_base", type=int, default=0)
+    p.add_argument("--runs", type=int, default=30)     # 30 runs as required
+    p.add_argument("--seed_base", type=int, default=1) # your precomputed seeds are seed_1..seed_30
     args = p.parse_args()
 
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,21 +115,10 @@ def main():
     out_path = os.path.join(repo_root, "results", "your_EA.txt")
     print(f"[benchmark] writing to {out_path}")
 
-    # Ensure the output file exists so os.path.getsize() checks won’t explode
     if not os.path.exists(out_path):
         open(out_path, "w").close()
 
-    # ------------------------------
-    # Commented-out A / B sections
-    # ------------------------------
-    # print("EA-A:")
-    # ...
-    # print("\nEA-B:")
-    # ...
-
-    # -------------
-    # EA-C (best)
-    # -------------
+    # ------------- EA-C (best) -------------
     print("\nEA-C (best):")
     for inst in args.instances:
         costs = []
